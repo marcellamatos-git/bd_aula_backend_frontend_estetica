@@ -1,1 +1,220 @@
-<p>clientes works!</p>
+
+<div class="pagina-clientes">
+    <header class="topo">
+      <a routerLink="/inicio" class="voltar">← Voltar ao início</a>
+      <span class="identidade">ESSENZA</span>
+      <span class="subtitulo-topo">ESTÉTICA & BEM-ESTAR</span>
+    </header>
+  
+    <main class="conteudo">
+      <div class="titulo-pagina">
+        <span class="etiqueta">GESTÃO DE CLIENTES</span>
+        <h1>Cadastro de clientes</h1>
+        <p>Cadastre e organize as informações dos seus clientes.</p>
+      </div>
+  
+      <form #formCliente="ngForm"
+            (ngSubmit)="cadastrarCliente()"
+            class="formulario">
+  
+        <section class="grupo">
+          <h2>Dados pessoais</h2>
+  
+          <div class="campos">
+            <div class="campo campo-largo">
+              <label for="nome">Nome completo *</label>
+              <input
+                id="nome"
+                name="nome"
+                type="text"
+                [(ngModel)]="cliente.nome"
+                placeholder="Digite o nome completo"
+                required>
+            </div>
+  
+            <div class="campo">
+              <label for="cpf">CPF *</label>
+              <input
+                id="cpf"
+                name="cpf"
+                type="text"
+                [(ngModel)]="cliente.cpf"
+                placeholder="Somente números"
+                inputmode="numeric"
+                required>
+            </div>
+  
+            <div class="campo">
+              <label for="dataNascimento">Data de nascimento</label>
+              <input
+                id="dataNascimento"
+                name="dataNascimento"
+                type="date"
+                [(ngModel)]="cliente.dataNascimento">
+            </div>
+  
+            <div class="campo">
+              <label for="sexo">Sexo</label>
+              <select id="sexo" name="sexo" [(ngModel)]="cliente.sexo">
+                <option value="">Selecione</option>
+                <option value="F">Feminino</option>
+                <option value="M">Masculino</option>
+                <option value="O">Outro</option>
+                <option value="N">Prefiro não informar</option>
+              </select>
+            </div>
+          </div>
+        </section>
+  
+        <section class="grupo">
+          <h2>Contato</h2>
+  
+          <div class="campos">
+            <div class="campo">
+              <label for="email">E-mail *</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                [(ngModel)]="cliente.email"
+                placeholder="exemplo@email.com"
+                required>
+            </div>
+  
+            <div class="campo">
+              <label for="telefone">Telefone</label>
+              <input
+                id="telefone"
+                name="telefone"
+                type="tel"
+                [(ngModel)]="cliente.telefone"
+                placeholder="(00) 00000-0000">
+            </div>
+          </div>
+        </section>
+  
+        <section class="grupo">
+          <h2>Endereço</h2>
+  
+          <div class="campos">
+            <div class="campo">
+              <label for="cep">CEP</label>
+              <input
+                id="cep"
+                name="cep"
+                type="text"
+                [(ngModel)]="cliente.cep"
+                placeholder="00000-000"
+                inputmode="numeric">
+            </div>
+  
+            <div class="campo campo-largo">
+              <label for="logradouro">Rua / Logradouro</label>
+              <input
+                id="logradouro"
+                name="logradouro"
+                type="text"
+                [(ngModel)]="cliente.logradouro"
+                placeholder="Nome da rua">
+            </div>
+  
+            <div class="campo">
+              <label for="numero">Número</label>
+              <input
+                id="numero"
+                name="numero"
+                type="text"
+                [(ngModel)]="cliente.numero"
+                placeholder="Número">
+            </div>
+  
+            <div class="campo">
+              <label for="complemento">Complemento</label>
+              <input
+                id="complemento"
+                name="complemento"
+                type="text"
+                [(ngModel)]="cliente.complemento"
+                placeholder="Apartamento, sala...">
+            </div>
+  
+            <div class="campo">
+              <label for="bairro">Bairro</label>
+              <input
+                id="bairro"
+                name="bairro"
+                type="text"
+                [(ngModel)]="cliente.bairro">
+            </div>
+  
+            <div class="campo">
+              <label for="cidade">Cidade</label>
+              <input
+                id="cidade"
+                name="cidade"
+                type="text"
+                [(ngModel)]="cliente.cidade">
+            </div>
+  
+            <div class="campo">
+              <label for="uf">Estado (UF)</label>
+              <select id="uf" name="uf" [(ngModel)]="cliente.uf">
+                <option value="">Selecione</option>
+                <option value="AC">AC</option>
+                <option value="AL">AL</option>
+                <option value="AP">AP</option>
+                <option value="AM">AM</option>
+                <option value="BA">BA</option>
+                <option value="CE">CE</option>
+                <option value="DF">DF</option>
+                <option value="ES">ES</option>
+                <option value="GO">GO</option>
+                <option value="MA">MA</option>
+                <option value="MT">MT</option>
+                <option value="MS">MS</option>
+                <option value="MG">MG</option>
+                <option value="PA">PA</option>
+                <option value="PB">PB</option>
+                <option value="PR">PR</option>
+                <option value="PE">PE</option>
+                <option value="PI">PI</option>
+                <option value="RJ">RJ</option>
+                <option value="RN">RN</option>
+                <option value="RS">RS</option>
+                <option value="RO">RO</option>
+                <option value="RR">RR</option>
+                <option value="SC">SC</option>
+                <option value="SP">SP</option>
+                <option value="SE">SE</option>
+                <option value="TO">TO</option>
+              </select>
+            </div>
+          </div>
+        </section>
+  
+        @if (mensagem) {
+          <div class="mensagem"
+               [class.erro]="tipoMensagem === 'erro'"
+               [class.sucesso]="tipoMensagem === 'sucesso'"
+               role="status">
+            {{ mensagem }}
+          </div>
+        }
+  
+        <div class="acoes">
+          <button type="button"
+                  class="botao-secundario"
+                  (click)="limparFormulario()">
+            Limpar
+          </button>
+  
+          <button type="submit" class="botao-principal">
+            Validar cadastro
+          </button>
+        </div>
+  
+        <p class="observacao">* Campos obrigatórios</p>
+      </form>
+    </main>
+  </div>
+  

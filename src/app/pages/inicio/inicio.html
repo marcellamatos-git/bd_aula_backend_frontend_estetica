@@ -11,15 +11,17 @@
   
       <p class="menu-label">MENU PRINCIPAL</p>
   
+
       <nav class="menu">
         <a href="#inicio" class="menu-item active">⌂ Início</a>
-        <a href="#clientes" class="menu-item">♙ Clientes</a>
+        <a routerLink="/clientes" class="menu-item">♙ Clientes</a>
         <a href="#funcionarios" class="menu-item">♧ Funcionários</a>
         <a href="#produtos" class="menu-item">▣ Produtos</a>
         <a href="#servicos" class="menu-item">✧ Serviços</a>
         <a href="#estoque" class="menu-item">▤ Estoque</a>
         <a href="#pedidos" class="menu-item">▧ Pedidos</a>
       </nav>
+      
   
       <div class="sidebar-footer">
         Sistema de Gestão<br />
@@ -67,7 +69,7 @@
         </div>
   
         <div class="dashboard-grid">
-          <a href="#clientes" class="module-card" id="clientes">
+          <a routerLink="/clientes" class="module-card">
             <span class="module-icon pink">♙</span>
             <h3>Clientes</h3>
             <p>Cadastro, consulta e edição de clientes.</p>
