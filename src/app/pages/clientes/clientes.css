@@ -251,5 +251,52 @@
     .acoes button {
       width: 100%;
     }
+
+    
+.lista-clientes {
+  margin: 30px auto;
+  padding: 24px;
+  max-width: 1200px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.lista-clientes h2 {
+  color: #6a5acd;
+  margin-bottom: 20px;
+}
+
+.tabela-responsiva {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.lista-clientes table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.lista-clientes th,
+.lista-clientes td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #e5e5ef;
+}
+
+.lista-clientes th {
+  background: #f0edff;
+  color: #4b3f8f;
+}
+
+.lista-clientes tbody tr:hover {
+  background: #f8f7ff;
+}
+
+.lista-vazia {
+  color: #666;
+  padding: 16px 0;
+}
+
   }
   
