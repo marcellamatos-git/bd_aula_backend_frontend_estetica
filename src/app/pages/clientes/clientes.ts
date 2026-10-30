@@ -3,12 +3,14 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+
 import {
   ClientesService,
   ClienteCadastro
 } from '../../services/clientes.service';
 
 interface Cliente extends ClienteCadastro {
+  idpessoa?: number;
   logradouro: string;
   bairro: string;
   cidade: string;
@@ -23,20 +25,24 @@ interface Cliente extends ClienteCadastro {
   styleUrl: './clientes.css'
 })
 export class Clientes implements OnInit {
+
   cliente: Cliente = this.novoCliente();
 
   mensagem = '';
   tipoMensagem: 'sucesso' | 'erro' | '' = '';
-  clientesCadastrados: any[] = [];
+
+  clientesCadastrados: Cliente[] = [];
+
   carregando = false;
+  carregandoLista = false;
+
+  // Guarda o ID do cliente que está sendo editado.
+  idClienteEdicao: number | null = null;
 
   constructor(private clientesService: ClientesService) {}
 
   ngOnInit(): void {
     this.listarClientes();
-  }
-  limparFormulario(): void {
-    this.cliente = this.novoCliente();
   }
 
   private novoCliente(): Cliente {
@@ -58,20 +64,36 @@ export class Clientes implements OnInit {
   }
 
   listarClientes(): void {
-    this.clientesService.listarClientes().subscribe({
-      next: (dados) => {
-        this.clientesCadastrados = dados;
-      },
-      error: (erro) => {
-        console.error('Erro ao listar clientes:', erro);
-      }
-    });
+    this.carregandoLista = true;
+
+    this.clientesService.listarClientes()
+      .pipe(
+        finalize(() => {
+          this.carregandoLista = false;
+        })
+      )
+      .subscribe({
+        next: (dados) => {
+          this.clientesCadastrados = Array.isArray(dados)
+            ? dados
+            : [];
+        },
+        error: (erro) => {
+          console.error('Erro ao listar clientes:', erro);
+          this.mensagem = 'Não foi possível carregar os clientes.';
+          this.tipoMensagem = 'erro';
+        }
+      });
   }
 
   cadastrarCliente(): void {
+    if (this.carregando) {
+      return;
+    }
+
     this.mensagem = '';
     this.tipoMensagem = '';
-  
+
     if (
       !this.cliente.nome.trim() ||
       !this.cliente.cpf ||
@@ -81,7 +103,13 @@ export class Clientes implements OnInit {
       this.tipoMensagem = 'erro';
       return;
     }
-  
+
+    if (!/^\d{8}$/.test(this.cliente.cep)) {
+      this.mensagem = 'O CEP deve conter exatamente 8 números.';
+      this.tipoMensagem = 'erro';
+      return;
+    }
+
     const dados: ClienteCadastro = {
       nome: this.cliente.nome.trim(),
       cpf: Number(this.cliente.cpf),
@@ -93,10 +121,15 @@ export class Clientes implements OnInit {
       numero: this.cliente.numero,
       complemento: this.cliente.complemento
     };
-  
+
     this.carregando = true;
-  
-    this.clientesService.cadastrarCliente(dados)
+
+    // Se existe ID, atualiza. Caso contrário, cadastra.
+    const requisicao = this.idClienteEdicao !== null
+      ? this.clientesService.atualizarCliente(this.idClienteEdicao, dados)
+      : this.clientesService.cadastrarCliente(dados);
+
+    requisicao
       .pipe(
         finalize(() => {
           this.carregando = false;
@@ -104,25 +137,95 @@ export class Clientes implements OnInit {
       )
       .subscribe({
         next: () => {
-          // Limpa o formulário após o cadastro confirmado
-          this.cliente = this.novoCliente();
-  
-          this.mensagem = 'Cliente cadastrado com sucesso!';
+          if (this.idClienteEdicao !== null) {
+            this.mensagem = 'Cliente atualizado com sucesso!';
+          } else {
+            this.mensagem = 'Cliente cadastrado com sucesso!';
+          }
+
           this.tipoMensagem = 'sucesso';
-  
-          // Atualiza a lista de clientes cadastrados
+
+          this.cancelarEdicao();
           this.listarClientes();
         },
         error: (erro) => {
-          console.error('Erro ao cadastrar cliente:', erro);
-  
+          console.error('Erro ao salvar cliente:', erro);
+
           this.mensagem =
-            erro.error?.mensagem ||
             erro.error?.message ||
-            'Não foi possível cadastrar o cliente.';
-  
+            erro.error?.title ||
+            'Não foi possível salvar o cliente.';
+
           this.tipoMensagem = 'erro';
         }
       });
+  }
+
+  editarCliente(cliente: Cliente): void {
+    if (!cliente.idpessoa) {
+      this.mensagem = 'Não foi possível identificar o cliente.';
+      this.tipoMensagem = 'erro';
+      return;
     }
- 
+
+    this.idClienteEdicao = cliente.idpessoa;
+
+    this.cliente = {
+      ...this.novoCliente(),
+      ...cliente
+    };
+
+    this.mensagem = 'Editando cliente: ' + cliente.nome;
+    this.tipoMensagem = 'sucesso';
+  }
+
+  excluirCliente(cliente: Cliente): void {
+    if (!cliente.idpessoa) {
+      this.mensagem = 'Não foi possível identificar o cliente.';
+      this.tipoMensagem = 'erro';
+      return;
+    }
+
+    const confirmar = confirm(
+      `Deseja realmente excluir o cliente ${cliente.nome}?`
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.clientesService.excluirCliente(cliente.idpessoa).subscribe({
+      next: () => {
+        this.mensagem = 'Cliente excluído com sucesso!';
+        this.tipoMensagem = 'sucesso';
+
+        if (this.idClienteEdicao === cliente.idpessoa) {
+          this.cancelarEdicao();
+        }
+
+        this.listarClientes();
+      },
+      error: (erro) => {
+        console.error('Erro ao excluir cliente:', erro);
+
+        this.mensagem =
+          erro.error?.message ||
+          erro.error?.title ||
+          'Não foi possível excluir o cliente.';
+
+        this.tipoMensagem = 'erro';
+      }
+    });
+  }
+
+  cancelarEdicao(): void {
+    this.idClienteEdicao = null;
+    this.cliente = this.novoCliente();
+  }
+
+  limparFormulario(): void {
+    this.cancelarEdicao();
+    this.mensagem = '';
+    this.tipoMensagem = '';
+  }
+}

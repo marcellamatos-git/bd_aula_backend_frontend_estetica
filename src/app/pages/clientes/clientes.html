@@ -1,5 +1,6 @@
 
 <div class="pagina-clientes">
+
   <header class="topo">
     <a routerLink="/inicio" class="voltar">← Voltar ao início</a>
     <span class="identidade">ESSENZA</span>
@@ -7,6 +8,7 @@
   </header>
 
   <main class="conteudo">
+
     <div class="titulo-pagina">
       <span class="etiqueta">GESTÃO DE CLIENTES</span>
       <h1>Cadastro de clientes</h1>
@@ -18,10 +20,12 @@
       (ngSubmit)="cadastrarCliente()"
       class="formulario"
     >
+
       <section class="grupo">
         <h2>Dados pessoais</h2>
 
         <div class="campos">
+
           <div class="campo campo-largo">
             <label for="nome">Nome completo *</label>
             <input
@@ -59,7 +63,11 @@
 
           <div class="campo">
             <label for="sexo">Sexo</label>
-            <select id="sexo" name="sexo" [(ngModel)]="cliente.sexo">
+            <select
+              id="sexo"
+              name="sexo"
+              [(ngModel)]="cliente.sexo"
+            >
               <option value="">Selecione</option>
               <option value="F">Feminino</option>
               <option value="M">Masculino</option>
@@ -67,6 +75,7 @@
               <option value="N">Prefiro não informar</option>
             </select>
           </div>
+
         </div>
       </section>
 
@@ -74,6 +83,7 @@
         <h2>Contato</h2>
 
         <div class="campos">
+
           <div class="campo">
             <label for="email">E-mail *</label>
             <input
@@ -96,6 +106,7 @@
               placeholder="(00) 00000-0000"
             >
           </div>
+
         </div>
       </section>
 
@@ -103,6 +114,7 @@
         <h2>Endereço</h2>
 
         <div class="campos">
+
           <div class="campo">
             <label for="cep">CEP</label>
             <input
@@ -170,7 +182,11 @@
 
           <div class="campo">
             <label for="uf">Estado (UF)</label>
-            <select id="uf" name="uf" [(ngModel)]="cliente.uf">
+            <select
+              id="uf"
+              name="uf"
+              [(ngModel)]="cliente.uf"
+            >
               <option value="">Selecione</option>
               <option value="AC">AC</option>
               <option value="AL">AL</option>
@@ -201,6 +217,7 @@
               <option value="TO">TO</option>
             </select>
           </div>
+
         </div>
       </section>
 
@@ -216,35 +233,48 @@
       }
 
       <div class="acoes">
+
         <button
           type="button"
           class="botao-secundario"
           (click)="limparFormulario()"
         >
-          Limpar
+          {{ idClienteEdicao !== null ? 'Cancelar edição' : 'Limpar' }}
         </button>
 
         <button
           type="submit"
-          class="botao-principal"
           [disabled]="carregando"
         >
-          {{ carregando ? 'Cadastrando...' : 'Cadastrar cliente' }}
+          {{
+            carregando
+              ? 'Salvando...'
+              : idClienteEdicao !== null
+                ? 'Salvar alterações'
+                : 'Cadastrar cliente'
+          }}
         </button>
+
       </div>
 
       <p class="observacao">* Campos obrigatórios</p>
+
     </form>
 
     <section class="lista-clientes">
+
       <h2>Clientes cadastrados</h2>
 
-      @if (clientesCadastrados.length === 0) {
+      @if (carregandoLista) {
+        <p class="lista-vazia">Carregando clientes...</p>
+      } @else if (clientesCadastrados.length === 0) {
         <p class="lista-vazia">
           Nenhum cliente cadastrado foi encontrado.
         </p>
       } @else {
+
         <div class="tabela-responsiva">
+
           <table>
             <thead>
               <tr>
@@ -255,12 +285,14 @@
                 <th>Data de nascimento</th>
                 <th>CEP</th>
                 <th>Número</th>
+                <th>Ações</th>
               </tr>
             </thead>
 
             <tbody>
-              @for (cliente of clientesCadastrados; track $index) {
+              @for (cliente of clientesCadastrados; track cliente.idpessoa) {
                 <tr>
+
                   <td>{{ cliente.nome }}</td>
                   <td>{{ cliente.cpf }}</td>
                   <td>{{ cliente.email }}</td>
@@ -268,12 +300,38 @@
                   <td>{{ cliente.dataNascimento }}</td>
                   <td>{{ cliente.cep }}</td>
                   <td>{{ cliente.numero }}</td>
+
+                  <td class="acoes-tabela">
+
+                    <button
+                      type="button"
+                      class="botao-editar"
+                      (click)="editarCliente(cliente)"
+                    >
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      class="botao-excluir"
+                      (click)="excluirCliente(cliente)"
+                    >
+                      Excluir
+                    </button>
+
+                  </td>
+
                 </tr>
               }
             </tbody>
           </table>
+
         </div>
+
       }
+
     </section>
+
   </main>
+
 </div>

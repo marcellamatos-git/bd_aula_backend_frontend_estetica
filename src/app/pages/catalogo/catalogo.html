@@ -1,0 +1,31 @@
+<div class="container py-4">
+    <h2 class="mb-4">Catálogo de Produtos & Serviços</h2>
+  
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <input 
+          type="text" 
+          class="form-control" 
+          placeholder="Pesquise por nome..." 
+          [(ngModel)]="termoBusca" 
+          (input)="filtrar()">
+      </div>
+    </div>
+  
+    <div class="row g-4">
+      <div class="col-md-4" *ngFor="let item of itensFiltrados">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">{{ item.item1 }}</h5>
+            <p class="card-text text-muted flex-grow-1">{{ item.descricaoItem }}</p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <span class="fs-5 fw-bold text-success">R$ {{ item.preco }}</span>
+              <button class="btn btn-primary" (click)="adicionarAoCarrinho(item)">
+                Adicionar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

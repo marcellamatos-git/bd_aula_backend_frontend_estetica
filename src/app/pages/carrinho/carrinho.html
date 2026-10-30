@@ -1,0 +1,46 @@
+<div class="container py-4">
+    <h2 class="mb-4">Carrinho de Compras</h2>
+  
+    <div *ngIf="itens.length === 0" class="alert alert-info">
+      O seu carrinho está vazio.
+    </div>
+  
+    <div *ngIf="itens.length > 0">
+      <table class="table table-hover align-middle">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Preço Unitário</th>
+            <th style="width: 120px;">Quantidade</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of itens">
+            <td>{{ item.nome }}</td>
+            <td>R$ {{ item.preco }}</td>
+            <td>
+              <input 
+                type="number" 
+                class="form-control" 
+                [value]="item.quantidade" 
+                (change)="alterarQtd(item.iditem, $event)" 
+                min="1">
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="remover(item.iditem)">
+                Remover
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <div class="d-flex justify-content-between align-items-center mt-4">
+        <h3>Total: <span class="text-success">R$ {{ cartService.getTotal() }}</span></h3>
+        <button class="btn btn-success btn-lg" (click)="finalizarPedido()">
+          Finalizar Pedido
+        </button>
+      </div>
+    </div>
+  </div>

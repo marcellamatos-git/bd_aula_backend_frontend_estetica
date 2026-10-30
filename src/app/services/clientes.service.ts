@@ -19,6 +19,7 @@ export interface ClienteCadastro {
   providedIn: 'root'
 })
 export class ClientesService {
+
   private readonly apiUrl = 'https://localhost:7000/api/Clientes';
 
   constructor(private http: HttpClient) {}
@@ -29,5 +30,13 @@ export class ClientesService {
 
   cadastrarCliente(cliente: ClienteCadastro): Observable<any> {
     return this.http.post<any>(this.apiUrl, cliente);
+  }
+
+  atualizarCliente(id: number, cliente: ClienteCadastro): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${id}`, cliente);
+  }
+
+  excluirCliente(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`);
   }
 }
