@@ -1,31 +1,82 @@
-<div class="container py-4">
-    <h2 class="mb-4">Catálogo de Produtos & Serviços</h2>
-  
-    <div class="row mb-4">
-      <div class="col-md-6">
-        <input 
-          type="text" 
-          class="form-control" 
-          placeholder="Pesquise por nome..." 
-          [(ngModel)]="termoBusca" 
-          (input)="filtrar()">
-      </div>
+<div class="pagina-catalogo">
+
+  <header class="cabecalho-catalogo">
+    <div class="titulo-secao">
+      <span class="etiqueta">LOJA VIRTUAL</span>
+      <h1>Catálogo de Produtos & Serviços</h1>
+      <p>Explore as nossas opções e adicione os itens desejados ao seu carrinho.</p>
     </div>
-  
-    <div class="row g-4">
-      <div class="col-md-4" *ngFor="let item of itensFiltrados">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">{{ item.item1 }}</h5>
-            <p class="card-text text-muted flex-grow-1">{{ item.descricaoItem }}</p>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <span class="fs-5 fw-bold text-success">R$ {{ item.preco }}</span>
-              <button class="btn btn-primary" (click)="adicionarAoCarrinho(item)">
-                Adicionar
+
+    @if (mensagemNotificacao) {
+      <div class="alerta-sucesso">
+        ✓ {{ mensagemNotificacao }}
+      </div>
+    }
+  </header>
+
+  <!-- FILTROS -->
+  <section class="filtros-container">
+    <div class="campo-busca">
+      <input 
+        type="text" 
+        [(ngModel)]="termoBusca" 
+        (input)="aplicarFiltros()"
+        placeholder="Pesquise por nome..." 
+      />
+    </div>
+
+    <div class="grupo-seletores">
+      <select [(ngModel)]="tipoSelecionado" (change)="aplicarFiltros()">
+        <option value="">Todos os Tipos</option>
+        <option value="P">Produtos</option>
+        <option value="S">Serviços</option>
+      </select>
+
+      <select [(ngModel)]="categoriaSelecionada" (change)="aplicarFiltros()">
+        <option value="">Todas as Categorias</option>
+        @for (cat of categorias; track cat.idcategoria) {
+          <option [value]="cat.idcategoria">{{ cat.categoria }}</option>
+        }
+      </select>
+    </div>
+  </section>
+
+  <!-- GRID DE CARDS -->
+  @if (carregando) {
+    <p class="estado-carregando">A carregar catálogo...</p>
+  } @else if (itensFiltrados.length === 0) {
+    <div class="estado-vazio">
+      <p>Nenhum produto ou serviço encontrado.</p>
+    </div>
+  } @else {
+    <div class="grid-catalogo">
+      @for (item of itensFiltrados; track item.iditem) {
+        <div class="card-item">
+          <div class="tipo-badge" [class.servico]="item.tipoItem === 'S'">
+            {{ item.tipoItem === 'S' ? 'Serviço' : 'Produto' }}
+          </div>
+
+          <div class="conteudo-card">
+            <h3>{{ item.item || item.nome }}</h3>
+            <p class="descricao">{{ item.descricaoItem || item.descricao || 'Sem descrição.' }}</p>
+            
+            <div class="rodape-card">
+              <span class="preco">
+                R$ {{ (item.preco || item.precoVenda || 0) | number:'1.2-2' }}
+              </span>
+
+              <button 
+                type="button" 
+                class="btn-adicionar"
+                (click)="adicionarAoCarrinho(item)"
+              >
+                + Adicionar
               </button>
             </div>
           </div>
         </div>
-      </div>
+      }
     </div>
-  </div>
+  }
+
+</div>

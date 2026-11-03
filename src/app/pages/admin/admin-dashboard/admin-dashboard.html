@@ -1,1 +1,128 @@
-<p>admin-dashboard works!</p>
+<div class="pagina-admin">
+
+    <header class="cabecalho-admin">
+      <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
+      <h1>Gestão de Estoque & Entradas</h1>
+      <p>Acompanhe os saldos de produtos e registre novas entradas de mercadorias.</p>
+    </header>
+  
+    @if (mensagemSucesso) {
+      <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+    }
+  
+    @if (mensagemErro) {
+      <div class="alerta erro">{{ mensagemErro }}</div>
+    }
+  
+    <!-- FORMULÁRIO DE ENTRADA DE PRODUTOS -->
+    <section class="card-painel">
+      <h2>Registrar Entrada de Produto</h2>
+  
+      <form (ngSubmit)="registrarEntrada()" class="form-entrada">
+        <div class="campos-grid">
+          
+          <div class="campo">
+            <label for="produto">Produto *</label>
+            <select id="produto" [(ngModel)]="entrada.iditem" name="iditem" required>
+              <option [ngValue]="null">-- Selecione um produto --</option>
+              @for (p of produtos; track p.iditem) {
+                <option [value]="p.iditem">{{ p.item || p.nome }}</option>
+              }
+            </select>
+          </div>
+  
+          <div class="campo">
+            <label for="quantidade">Quantidade *</label>
+            <input 
+              type="number" 
+              id="quantidade" 
+              name="quantidadeEntrada" 
+              [(ngModel)]="entrada.quantidadeEntrada" 
+              min="1" 
+              required 
+            />
+          </div>
+  
+          <div class="campo">
+            <label for="valorUnitario">Valor Unitário de Entrada (R$)</label>
+            <input 
+              type="number" 
+              id="valorUnitario" 
+              name="valorUnitarioEntrada" 
+              [(ngModel)]="entrada.valorUnitarioEntrada" 
+              step="0.01" 
+              min="0" 
+            />
+          </div>
+  
+          <div class="campo">
+            <label for="dataEntrada">Data da Entrada</label>
+            <input 
+              type="date" 
+              id="dataEntrada" 
+              name="dataEntradaProduto" 
+              [(ngModel)]="entrada.dataEntradaProduto" 
+            />
+          </div>
+  
+        </div>
+  
+        <div class="acoes-form">
+          <button type="button" class="btn-secundario" (click)="limparFormulario()">Limpar</button>
+          <button type="submit" class="btn-primario" [disabled]="salvandoEntrada">
+            {{ salvandoEntrada ? 'Salvando...' : 'Confirmar Entrada' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  
+    <!-- TABELA DE CONSULTA DE ESTOQUE -->
+    <section class="card-painel">
+      <h2>Consulta de Estoque Atual</h2>
+  
+      @if (carregandoEstoque) {
+        <p class="carregando">Carregando dados do estoque...</p>
+      } @else if (estoque.length === 0) {
+        <p class="vazio">Nenhum produto cadastrado no estoque.</p>
+      } @else {
+        <div class="tabela-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID Item</th>
+                <th>Produto</th>
+                <th>Categoria</th>
+                <th>Preço de Venda</th>
+                <th>Qtd. em Estoque</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (item of estoque; track item.iditem) {
+                <tr>
+                  <td>#{{ item.iditem }}</td>
+                  <td>
+                    <strong>{{ item.item || item.nomeItem }}</strong>
+                    <small *ngIf="item.descricaoItem"><br />{{ item.descricaoItem }}</small>
+                  </td>
+                  <td>{{ item.categoria || 'Geral' }}</td>
+                  <td>R$ {{ (item.preco || item.precoVenda || 0) | number:'1.2-2' }}</td>
+                  <td>
+                    <span class="qtd-badge" [class.baixo]="(item.quantidadeEstoque || item.quantidade) <= 5">
+                      {{ item.quantidadeEstoque || item.quantidade || 0 }} {{ item.unidade || 'und' }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-badge" [class.ativo]="item.ativo !== 'N'">
+                      {{ item.ativo !== 'N' ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  
+  </div>

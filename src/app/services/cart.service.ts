@@ -1,59 +1,85 @@
 import { Injectable } from '@angular/core';
 
-export interface CartItem {
+export interface ItemCarrinho {
   iditem: number;
-  nome: string;
+  item: string;
+  descricaoItem?: string;
   preco: number;
+  tipoItem: 'P' | 'S';
   quantidade: number;
-  tipo: 'P' | 'S';
-  estoqueDisponivel?: number;
+  quantidadeEstoque?: number;
 }
+
+// Alias para manter compatibilidade caso algum componente importe CartItem
+export type CartItem = ItemCarrinho;
 
 @Injectable({
   providedIn: 'root'
 })
 export class CartService {
-  private items: CartItem[] = [];
+  private itens: ItemCarrinho[] = [];
 
-  getItems(): CartItem[] {
-    return this.items;
+  getItens(): ItemCarrinho[] {
+    return this.itens;
   }
 
-  addToCart(product: CartItem) {
-    const existingIndex = this.items.findIndex(i => i.iditem === product.iditem);
-    if (existingIndex > -1) {
-      const newQty = this.items[existingIndex].quantidade + 1;
-      if (product.tipo === 'P' && product.estoqueDisponivel && newQty > product.estoqueDisponivel) {
-        alert('Quantidade indisponível em estoque.');
-        return;
+  // Alias para getItens()
+  getItems(): ItemCarrinho[] {
+    return this.getItens();
+  }
+
+  adicionarAoCarrinho(produtoServico: any) {
+    const itemExistente = this.itens.find(i => i.iditem === produtoServico.iditem);
+
+    if (itemExistente) {
+      if (produtoServico.tipoItem === 'P' && produtoServico.quantidadeEstoque !== undefined) {
+        if (itemExistente.quantidade < produtoServico.quantidadeEstoque) {
+          itemExistente.quantidade++;
+        } else {
+          alert('Quantidade máxima em estoque atingida!');
+        }
+      } else {
+        itemExistente.quantidade++;
       }
-      this.items[existingIndex].quantidade = newQty;
     } else {
-      this.items.push({ ...product, quantidade: 1 });
+      this.itens.push({
+        iditem: produtoServico.iditem,
+        item: produtoServico.item || produtoServico.nome,
+        descricaoItem: produtoServico.descricaoItem || produtoServico.descricao,
+        preco: produtoServico.preco || produtoServico.precoVenda || 0,
+        tipoItem: produtoServico.tipoItem || 'P',
+        quantidade: 1,
+        quantidadeEstoque: produtoServico.quantidadeEstoque
+      });
     }
   }
 
-  updateQuantity(iditem: number, quantity: number) {
-    const item = this.items.find(i => i.iditem === iditem);
-    if (item) {
-      if (item.tipo === 'P' && item.estoqueDisponivel && quantity > item.estoqueDisponivel) {
-        alert('Estoque máximo atingido.');
-        return;
-      }
-      item.quantidade = quantity > 0 ? quantity : 1;
-    }
+  removerItem(iditem: number) {
+    this.itens = this.itens.filter(i => i.iditem !== iditem);
   }
 
+  // Alias para removerItem
   removeItem(iditem: number) {
-    this.items = this.items.filter(i => i.iditem !== iditem);
+    this.removerItem(iditem);
+  }
+
+  atualizarQuantidade(iditem: number, quantidade: number) {
+    const item = this.itens.find(i => i.iditem === iditem);
+    if (item) {
+      if (quantidade <= 0) {
+        this.removerItem(iditem);
+      } else {
+        item.quantidade = quantidade;
+      }
+    }
+  }
+
+  limparCarrinho() {
+    this.itens = [];
+    return this.itens;
   }
 
   getTotal(): number {
-    return this.items.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
-  }
-
-  clearCart() {
-    this.items = [];
-    return this.items;
+    return this.itens.reduce((sum, item) => sum + (item.preco * item.quantidade), 0);
   }
 }

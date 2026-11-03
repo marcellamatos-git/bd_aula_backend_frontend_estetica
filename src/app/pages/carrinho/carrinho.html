@@ -1,46 +1,102 @@
-<div class="container py-4">
-    <h2 class="mb-4">Carrinho de Compras</h2>
-  
-    <div *ngIf="itens.length === 0" class="alert alert-info">
-      O seu carrinho está vazio.
+<div class="pagina-carrinho">
+
+  <header class="cabecalho-carrinho">
+    <span class="etiqueta">LOJA VIRTUAL</span>
+    <h1>Carrinho de Compras</h1>
+    <p>Confira os seus itens e selecione o cliente para concluir a compra.</p>
+  </header>
+
+  @if (mensagemSucesso) {
+    <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+  }
+
+  @if (mensagemErro) {
+    <div class="alerta erro">{{ mensagemErro }}</div>
+  }
+
+  @if (itens.length === 0) {
+    <div class="carrinho-vazio">
+      <p>O seu carrinho está vazio.</p>
+      <a routerLink="/catalogo" class="btn-voltar">Explorar Catálogo</a>
     </div>
-  
-    <div *ngIf="itens.length > 0">
-      <table class="table table-hover align-middle">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th>Preço Unitário</th>
-            <th style="width: 120px;">Quantidade</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of itens">
-            <td>{{ item.nome }}</td>
-            <td>R$ {{ item.preco }}</td>
-            <td>
-              <input 
-                type="number" 
-                class="form-control" 
-                [value]="item.quantidade" 
-                (change)="alterarQtd(item.iditem, $event)" 
-                min="1">
-            </td>
-            <td>
-              <button class="btn btn-danger btn-sm" (click)="remover(item.iditem)">
-                Remover
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-  
-      <div class="d-flex justify-content-between align-items-center mt-4">
-        <h3>Total: <span class="text-success">R$ {{ cartService.getTotal() }}</span></h3>
-        <button class="btn btn-success btn-lg" (click)="finalizarPedido()">
-          Finalizar Pedido
-        </button>
+  } @else {
+    <div class="conteudo-carrinho">
+      
+      <!-- TABELA/LISTA DE ITENS -->
+      <div class="lista-itens">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Tipo</th>
+              <th>Preço Unit.</th>
+              <th>Qtd.</th>
+              <th>Subtotal</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of itens; track item.iditem) {
+              <tr>
+                <td>
+                  <strong>{{ item.item }}</strong>
+                  <small *ngIf="item.descricaoItem">{{ item.descricaoItem }}</small>
+                </td>
+                <td>
+                  <span class="badge" [class.servico]="item.tipoItem === 'S'">
+                    {{ item.tipoItem === 'S' ? 'Serviço' : 'Produto' }}
+                  </span>
+                </td>
+                <td>R$ {{ item.preco | number:'1.2-2' }}</td>
+                <td class="coluna-qtd">
+                  <button type="button" (click)="alterarQuantidade(item, -1)">-</button>
+                  <span>{{ item.quantidade }}</span>
+                  <button type="button" (click)="alterarQuantidade(item, 1)">+</button>
+                </td>
+                <td><strong>R$ {{ (item.preco * item.quantidade) | number:'1.2-2' }}</strong></td>
+                <td>
+                  <button type="button" class="btn-remover" (click)="remover(item.iditem)">
+                    Remover
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
       </div>
+
+      <!-- PAINEL DE RESUMO E FINALIZAÇÃO -->
+      <div class="resumo-pedido">
+        <h2>Resumo do Pedido</h2>
+
+        <div class="campo-grupo">
+          <label for="cliente">Selecione o Cliente *</label>
+          <select id="cliente" [(ngModel)]="idClienteSelecionado">
+            <option [ngValue]="null">-- Selecione um cliente --</option>
+            @for (cli of clientes; track cli.idpessoa) {
+              <option [value]="cli.idpessoa">{{ cli.nome }} (CPF: {{ cli.cpf }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="linha-resumo total">
+          <span>Valor Total:</span>
+          <strong>R$ {{ total | number:'1.2-2' }}</strong>
+        </div>
+
+        <button 
+          type="button" 
+          class="btn-finalizar" 
+          [disabled]="carregando"
+          (click)="finalizarPedido()"
+        >
+          {{ carregando ? 'A processar...' : 'Finalizar Pedido' }}
+        </button>
+
+        <a routerLink="/catalogo" class="link-continuar">Continuar a comprar</a>
+      </div>
+
     </div>
-  </div>
+  }
+
+</div>

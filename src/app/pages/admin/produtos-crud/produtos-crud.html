@@ -1,1 +1,143 @@
-<p>produtos-crud works!</p>
+<div class="pagina-produtos">
+
+    <header class="cabecalho-produtos">
+      <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
+      <h1>Cadastro de Produtos de Beleza</h1>
+      <p>Adicione novos cosméticos e produtos ou edite os existentes no catálogo.</p>
+    </header>
+  
+    @if (mensagemSucesso) {
+      <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+    }
+  
+    @if (mensagemErro) {
+      <div class="alerta erro">{{ mensagemErro }}</div>
+    }
+  
+    <!-- FORMULÁRIO -->
+    <section class="card-painel">
+      <h2>{{ idProdutoEdicao ? 'Editar Produto' : 'Cadastrar Novo Produto' }}</h2>
+  
+      <form (ngSubmit)="salvarProduto()">
+        <div class="campos-grid">
+          
+          <div class="campo campo-largo">
+            <label for="nome">Nome do Produto *</label>
+            <input 
+              type="text" 
+              id="nome" 
+              name="item" 
+              [(ngModel)]="produto.item" 
+              placeholder="Ex: Creme Hidratante Facial" 
+              required 
+            />
+          </div>
+  
+          <div class="campo">
+            <label for="categoria">Categoria *</label>
+            <select id="categoria" name="idcategoria" [(ngModel)]="produto.idcategoria" required>
+              <option [ngValue]="null">-- Selecione --</option>
+              @for (cat of categorias; track cat.idcategoria) {
+                <option [value]="cat.idcategoria">{{ cat.categoria }}</option>
+              }
+            </select>
+          </div>
+  
+          <div class="campo">
+            <label for="preco">Preço de Venda (R$) *</label>
+            <input 
+              type="number" 
+              id="preco" 
+              name="preco" 
+              [(ngModel)]="produto.preco" 
+              step="0.01" 
+              min="0" 
+              required 
+            />
+          </div>
+  
+          <div class="campo">
+            <label for="unidade">Unidade de Medida</label>
+            <select id="unidade" name="unidade" [(ngModel)]="produto.unidade">
+              <option value="UN">Unidade (UN)</option>
+              <option value="ML">Mililitros (ML)</option>
+              <option value="G">Gramas (G)</option>
+              <option value="KIT">Kit</option>
+            </select>
+          </div>
+  
+          <div class="campo campo-largo">
+            <label for="descricao">Descrição Completa</label>
+            <input 
+              type="text" 
+              id="descricao" 
+              name="descricaoItem" 
+              [(ngModel)]="produto.descricaoItem" 
+              placeholder="Ex: Indicado para peles secas e sensíveis" 
+            />
+          </div>
+  
+        </div>
+  
+        <div class="acoes-form">
+          <button type="button" class="btn-secundario" (click)="limparFormulario()">
+            {{ idProdutoEdicao ? 'Cancelar Edição' : 'Limpar' }}
+          </button>
+          <button type="submit" class="btn-primario" [disabled]="salvando">
+            {{ salvando ? 'Salvando...' : (idProdutoEdicao ? 'Salvar Alterações' : 'Cadastrar Produto') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  
+    <!-- LISTA DE PRODUTOS CADASTRADOS -->
+    <section class="card-painel">
+      <h2>Produtos de Beleza Cadastrados</h2>
+  
+      @if (carregando) {
+        <p class="carregando">Carregando lista de produtos...</p>
+      } @else if (produtos.length === 0) {
+        <p class="vazio">Nenhum produto cadastrado.</p>
+      } @else {
+        <div class="tabela-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Preço</th>
+                <th>Unidade</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of produtos; track p.iditem) {
+                <tr>
+                  <td>#{{ p.iditem }}</td>
+                  <td>
+                    <strong>{{ p.item }}</strong>
+                    <small *ngIf="p.descricaoItem"><br />{{ p.descricaoItem }}</small>
+                  </td>
+                  <td>{{ p.categoria || 'Cosméticos' }}</td>
+                  <td>R$ {{ (p.preco || p.precoVenda || 0) | number:'1.2-2' }}</td>
+                  <td>{{ p.unidade || 'UN' }}</td>
+                  <td>
+                    <span class="status-badge" [class.ativo]="p.ativoProdutoServico !== 'N'">
+                      {{ p.ativoProdutoServico !== 'N' ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+                  <td class="coluna-acoes">
+                    <button type="button" class="btn-editar" (click)="editarProduto(p)">Editar</button>
+                    <button type="button" class="btn-desativar" (click)="desativarProduto(p)">Desativar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  
+  </div>

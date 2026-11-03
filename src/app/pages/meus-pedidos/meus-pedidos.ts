@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 @Component({
-  imports: [],
   selector: 'app-meus-pedidos',
-  styleUrl: './meus-pedidos.css',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './meus-pedidos.html',
+  styleUrl: './meus-pedidos.css'
 })
-export class MeusPedidos {}
+export class MeusPedidosComponent {}

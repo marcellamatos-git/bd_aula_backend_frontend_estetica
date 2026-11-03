@@ -1,0 +1,169 @@
+.pagina-catalogo {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .cabecalho-catalogo {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  
+  .etiqueta {
+    font-size: 11px;
+    font-weight: 700;
+    color: #b5729d;
+    letter-spacing: 1.5px;
+  }
+  
+  .cabecalho-catalogo h1 {
+    font-size: 26px;
+    color: #3b2030;
+    margin-top: 4px;
+  }
+  
+  .cabecalho-catalogo p {
+    color: #7e6c76;
+    font-size: 14px;
+  }
+  
+  .alerta-sucesso {
+    background-color: #e8fdf2;
+    color: #238551;
+    padding: 10px 18px;
+    border-radius: 20px;
+    border: 1px solid #bcecd3;
+    font-weight: 600;
+    font-size: 13px;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  /* FILTROS */
+  .filtros-container {
+    display: flex;
+    gap: 16px;
+    background-color: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid #f0e6eb;
+    flex-wrap: wrap;
+  }
+  
+  .campo-busca {
+    flex: 1;
+    min-width: 250px;
+  }
+  
+  .campo-busca input, .grupo-seletores select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #e3d2dc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    background-color: #fcfbfe;
+  }
+  
+  .campo-busca input:focus, .grupo-seletores select:focus {
+    border-color: #b5729d;
+  }
+  
+  .grupo-seletores {
+    display: flex;
+    gap: 12px;
+  }
+  
+  /* GRID DOS CARDS */
+  .grid-catalogo {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  
+  .card-item {
+    background-color: #ffffff;
+    border: 1px solid #f0e6eb;
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(115, 38, 85, 0.06);
+    border-color: #e3c4d5;
+  }
+  
+  .tipo-badge {
+    align-self: flex-start;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background-color: #e8f5fd;
+    color: #2b91d6;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  
+  .tipo-badge.servico {
+    background-color: #fdf5e8;
+    color: #e69324;
+  }
+  
+  .conteudo-card h3 {
+    font-size: 17px;
+    color: #3b2030;
+    margin-bottom: 6px;
+  }
+  
+  .descricao {
+    font-size: 13px;
+    color: #82727b;
+    line-height: 1.4;
+    margin-bottom: 20px;
+    min-height: 38px;
+  }
+  
+  .rodape-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f9f3f6;
+  }
+  
+  .preco {
+    font-size: 18px;
+    font-weight: 700;
+    color: #732655;
+  }
+  
+  .btn-adicionar {
+    background-color: #8c3b6d;
+    color: #ffffff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-adicionar:hover {
+    background-color: #732655;
+  }
+  
+  .estado-carregando, .estado-vazio {
+    text-align: center;
+    padding: 40px;
+    color: #82727b;
+    background-color: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #e3d2dc;
+  }
