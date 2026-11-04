@@ -14,7 +14,6 @@ export class AdminDashboardComponent implements OnInit {
   estoque: any[] = [];
   produtos: any[] = [];
   
-  // Modelo para o formulário de Entrada de Produtos
   entrada = {
     iditem: null as number | null,
     quantidadeEntrada: 1,
@@ -38,7 +37,6 @@ export class AdminDashboardComponent implements OnInit {
     this.carregarProdutos();
   }
 
-  // Carrega a listagem geral de estoque
   carregarEstoque() {
     this.carregandoEstoque = true;
     this.http.get<any[]>(this.apiUrlEstoque).subscribe({
@@ -53,23 +51,29 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  // Carrega os itens do tipo Produto ('P') para o dropdown do formulário
   carregarProdutos() {
     this.http.get<any[]>(this.apiUrlItens).subscribe({
       next: (res) => {
-        this.produtos = (res || []).filter(i => i.tipoItem === 'P' || i.tipo === 'P');
+        const lista = res || [];
+        // Mantém todos os produtos para a seleção
+        this.produtos = lista.map(i => ({
+          iditem: i.iditem || i.id || i.idItem,
+          item: i.item || i.nome || i.nomeItem,
+          unidade: i.unidade || 'UN'
+        }));
       },
       error: (err) => console.error('Erro ao carregar produtos:', err)
     });
   }
 
-  // Registra a entrada do produto
   registrarEntrada() {
     this.mensagemSucesso = '';
     this.mensagemErro = '';
 
-    if (!this.entrada.iditem) {
-      this.mensagemErro = 'Selecione um produto.';
+    const idItemNum = Number(this.entrada.iditem);
+
+    if (!idItemNum || isNaN(idItemNum)) {
+      this.mensagemErro = 'Por favor, selecione um produto válido da lista.';
       return;
     }
 
@@ -80,16 +84,31 @@ export class AdminDashboardComponent implements OnInit {
 
     this.salvandoEntrada = true;
 
-    this.http.post(this.apiUrlEntradas, this.entrada).subscribe({
-      next: () => {
+    const produtoSel = this.produtos.find(p => p.iditem === idItemNum);
+    const unidadeProd = produtoSel?.unidade || 'UN';
+
+    // Monta o DTO exato da tabela entrada_produto
+    const payloadEntrada = {
+      iditem: idItemNum,
+      quantidadeEntrada: Number(this.entrada.quantidadeEntrada),
+      unidade: unidadeProd,
+      valorUnitarioEntrada: Number(this.entrada.valorUnitarioEntrada),
+      dataEntradaProduto: this.entrada.dataEntradaProduto ? this.entrada.dataEntradaProduto : new Date().toISOString().split('T')[0]
+    };
+
+    console.log('Enviando entrada válida:', payloadEntrada);
+
+    this.http.post(this.apiUrlEntradas, payloadEntrada).subscribe({
+      next: (res) => {
+        console.log('Entrada registrada com sucesso:', res);
         this.mensagemSucesso = 'Entrada de produto registrada com sucesso!';
         this.limparFormulario();
         this.carregarEstoque();
         this.salvandoEntrada = false;
       },
       error: (err) => {
-        console.error('Erro ao registrar entrada:', err);
-        this.mensagemErro = 'Erro ao registrar entrada de produto.';
+        console.error('Erro 500 do servidor ao registrar entrada:', err);
+        this.mensagemErro = 'Erro 500 no banco MySQL. Certifique-se de cadastrar o produto em "Cadastrar Produtos" antes de dar entrada.';
         this.salvandoEntrada = false;
       }
     });

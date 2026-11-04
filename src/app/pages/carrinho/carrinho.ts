@@ -52,7 +52,6 @@ export class CarrinhoComponent implements OnInit {
     this.carregarCarrinho();
   }
 
-  // Aceita tanto o ID (number) quanto o objeto item para evitar erros no HTML
   remover(param: ItemCarrinho | number) {
     const id = typeof param === 'number' ? param : param.iditem;
     this.cartService.removerItem(id);
@@ -63,7 +62,6 @@ export class CarrinhoComponent implements OnInit {
     return this.cartService.getTotal();
   }
 
-  // Função para registar o atendimento/pedido na base de dados
   finalizarPedido() {
     this.mensagemSucesso = '';
     this.mensagemErro = '';
@@ -80,28 +78,43 @@ export class CarrinhoComponent implements OnInit {
 
     this.carregando = true;
 
-    // Estrutura do DTO para enviar à API
+    const idCliente = Number(this.idClienteSelecionado);
+
+    // Payload estruturado estritamente conforme o modelo de banco 'atendimento' e 'atendimentoitem'
     const payloadAtendimento = {
-      idpessoa: this.idClienteSelecionado,
-      dataAtendimento: new Date().toISOString(),
-      statusAtendimento: 'A', // A = Aberto
-      itens: this.itens.map(item => ({
-        iditem: item.iditem,
-        quantidadeItens: item.quantidade,
-        valorUnitarioEntrada: item.preco
+      idpessoa: idCliente,
+      dataAtendimento: new Date().toISOString().split('T')[0], // Envia em formato DATE YYYY-MM-DD
+      statusAtendimento: 'A',
+      atendimentoItens: this.itens.map(item => ({
+        iditem: Number(item.iditem),
+        idfuncionario: 1, // Funcionário padrão (FK obrigatória no MySQL)
+        quantidadeItens: Number(item.quantidade),
+        valorUnitarioEntrada: Number(item.preco)
       }))
     };
 
+    console.log('Payload enviado para /api/Atendimentos:', payloadAtendimento);
+
     this.http.post(this.apiUrlAtendimentos, payloadAtendimento).subscribe({
-      next: () => {
-        this.mensagemSucesso = 'Pedido/Atendimento registado com sucesso!';
+      next: (res) => {
+        console.log('Atendimento criado com sucesso:', res);
+        this.mensagemSucesso = 'Pedido/Atendimento registrado com sucesso!';
         this.cartService.limparCarrinho();
         this.carregarCarrinho();
         this.carregando = false;
       },
       error: (err) => {
-        console.error('Erro ao finalizar pedido:', err);
-        this.mensagemErro = 'Erro ao registar pedido. Verifique se o backend está em execução.';
+        console.error('Erro detalhado da API:', err);
+
+        if (err.error && typeof err.error === 'object' && err.error.errors) {
+          const detalhes = Object.values(err.error.errors).flat().join(' | ');
+          this.mensagemErro = `Erro de validação: ${detalhes}`;
+        } else if (typeof err.error === 'string') {
+          this.mensagemErro = `Erro no backend: ${err.error}`;
+        } else {
+          this.mensagemErro = 'Erro ao registrar pedido. Verifique o console do navegador (F12) e a API C#.';
+        }
+
         this.carregando = false;
       }
     });

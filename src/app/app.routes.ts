@@ -6,6 +6,8 @@ import { CarrinhoComponent } from './pages/carrinho/carrinho';
 import { MeusPedidosComponent } from './pages/meus-pedidos/meus-pedidos';
 import { AdminDashboardComponent } from './pages/admin/admin-dashboard/admin-dashboard';
 import { ProdutosCrudComponent } from './pages/admin/produtos-crud/produtos-crud';
+import { ServicosCrudComponent } from './pages/admin/servicos-crud/servicos-crud';
+import { PedidosAdminComponent } from './pages/admin/pedidos-admin/pedidos-admin';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'inicio', pathMatch: 'full' },
@@ -16,5 +18,7 @@ export const routes: Routes = [
   { path: 'meus-pedidos', component: MeusPedidosComponent },
   { path: 'admin', component: AdminDashboardComponent },
   { path: 'produtos-crud', component: ProdutosCrudComponent },
+  { path: 'servicos-crud', component: ServicosCrudComponent },
+  { path: 'pedidos-admin', component: PedidosAdminComponent },
   { path: '**', redirectTo: 'inicio' }
 ];

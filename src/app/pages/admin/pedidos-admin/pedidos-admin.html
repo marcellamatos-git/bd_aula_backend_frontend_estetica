@@ -1,0 +1,83 @@
+<div class="pagina-pedidos-admin">
+
+    <header class="cabecalho-admin">
+      <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
+      <h1>Gestão de Pedidos e Atendimentos</h1>
+      <p>Acompanhe as compras dos clientes e atualize o status dos atendimentos.</p>
+    </header>
+  
+    @if (mensagemSucesso) {
+      <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+    }
+  
+    @if (mensagemErro) {
+      <div class="alerta erro">{{ mensagemErro }}</div>
+    }
+  
+    <section class="card-painel">
+      <div class="barra-filtros">
+        <div class="campo-filtro">
+          <label for="statusSelect">Filtrar por Situação:</label>
+          <select id="statusSelect" [(ngModel)]="statusFiltro" (change)="aplicarFiltro()">
+            <option value="">Todos os Pedidos</option>
+            <option value="A">Em Aberto</option>
+            <option value="P">Em Processamento</option>
+            <option value="C">Concluídos</option>
+            <option value="X">Cancelados</option>
+          </select>
+        </div>
+      </div>
+  
+      @if (carregando) {
+        <p class="carregando">Carregando pedidos...</p>
+      } @else if (pedidosFiltrados.length === 0) {
+        <p class="vazio">Nenhum pedido encontrado com os filtros selecionados.</p>
+      } @else {
+        <div class="tabela-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Valor Total</th>
+                <th>Situação</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of pedidosFiltrados; track p.idatendimento || p.id) {
+                <tr>
+                  <td>#{{ p.idatendimento || p.id }}</td>
+                  <td>
+                    <strong>{{ p.nomePessoa || p.nomeCliente || 'Cliente #' + (p.idpessoa || p.idCliente) }}</strong>
+                  </td>
+                  <td>{{ (p.dataAtendimento || p.data) | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td>R$ {{ (p.valorTotal || p.total || 0) | number:'1.2-2' }}</td>
+                  <td>
+                    <span class="badge-status" [class]="'status-' + (p.statusAtendimento || 'A').toLowerCase()">
+                      {{ formatarStatus(p.statusAtendimento) }}
+                    </span>
+                  </td>
+                  <td class="coluna-acoes">
+                    <button type="button" class="btn-detalhes" (click)="verDetalhes(p)">Ver Itens</button>
+                    <select 
+                      [ngModel]="p.statusAtendimento || 'A'" 
+                      (change)="atualizarStatus(p, $any($event.target).value)"
+                      class="seletor-status"
+                    >
+                      <option value="A">Aberto</option>
+                      <option value="P">Em Processamento</option>
+                      <option value="C">Concluído</option>
+                      <option value="X">Cancelado</option>
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  
+  </div>

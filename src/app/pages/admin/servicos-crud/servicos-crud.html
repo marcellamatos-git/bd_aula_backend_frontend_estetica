@@ -1,1 +1,131 @@
-<p>servicos-crud works!</p>
+<div class="pagina-servicos">
+
+    <header class="cabecalho-servicos">
+      <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
+      <h1>Gestão de Serviços Estéticos</h1>
+      <p>Cadastre e gira os procedimentos e tratamentos oferecidos na clínica.</p>
+    </header>
+  
+    @if (mensagemSucesso) {
+      <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+    }
+  
+    @if (mensagemErro) {
+      <div class="alerta erro">{{ mensagemErro }}</div>
+    }
+  
+    <!-- FORMULÁRIO -->
+    <section class="card-painel">
+      <h2>{{ idServicoEdicao ? 'Editar Serviço' : 'Cadastrar Novo Serviço' }}</h2>
+  
+      <form (ngSubmit)="salvarServico()">
+        <div class="campos-grid">
+          
+          <div class="campo campo-largo">
+            <label for="nomeServico">Nome do Serviço *</label>
+            <input 
+              type="text" 
+              id="nomeServico" 
+              name="item" 
+              [(ngModel)]="servico.item" 
+              placeholder="Ex: Massagem Modeladora ou Drenagem" 
+              required 
+            />
+          </div>
+  
+          <div class="campo">
+            <label for="catServico">Categoria *</label>
+            <select id="catServico" name="idcategoria" [(ngModel)]="servico.idcategoria" required>
+              <option [ngValue]="null">-- Selecione --</option>
+              @for (cat of categorias; track cat.idcategoria) {
+                <option [value]="cat.idcategoria">{{ cat.categoria }}</option>
+              }
+            </select>
+          </div>
+  
+          <div class="campo">
+            <label for="precoServico">Preço da Sessão (R$) *</label>
+            <input 
+              type="number" 
+              id="precoServico" 
+              name="preco" 
+              [(ngModel)]="servico.preco" 
+              step="0.01" 
+              min="0" 
+              required 
+            />
+          </div>
+  
+          <div class="campo campo-largo">
+            <label for="descServico">Descrição do Procedimento</label>
+            <input 
+              type="text" 
+              id="descServico" 
+              name="descricaoItem" 
+              [(ngModel)]="servico.descricaoItem" 
+              placeholder="Ex: Duração de 60 min com máscara de hidratação" 
+            />
+          </div>
+  
+        </div>
+  
+        <div class="acoes-form">
+          <button type="button" class="btn-secundario" (click)="limparFormulario()">
+            {{ idServicoEdicao ? 'Cancelar Edição' : 'Limpar' }}
+          </button>
+          <button type="submit" class="btn-primario" [disabled]="salvando">
+            {{ salvando ? 'Salvando...' : (idServicoEdicao ? 'Salvar Alterações' : 'Cadastrar Serviço') }}
+          </button>
+        </div>
+      </form>
+    </section>
+  
+    <!-- LISTA DE SERVIÇOS CADASTRADOS -->
+    <section class="card-painel">
+      <h2>Serviços Disponíveis</h2>
+  
+      @if (carregando) {
+        <p class="carregando">A carregar lista de serviços...</p>
+      } @else if (servicos.length === 0) {
+        <p class="vazio">Nenhum serviço cadastrado.</p>
+      } @else {
+        <div class="tabela-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Serviço</th>
+                <th>Categoria</th>
+                <th>Preço por Sessão</th>
+                <th>Status</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of servicos; track s.iditem) {
+                <tr>
+                  <td>#{{ s.iditem }}</td>
+                  <td>
+                    <strong>{{ s.item }}</strong>
+                    <small *ngIf="s.descricaoItem"><br />{{ s.descricaoItem }}</small>
+                  </td>
+                  <td>{{ s.categoria || 'Serviços Estéticos' }}</td>
+                  <td>R$ {{ s.preco | number:'1.2-2' }}</td>
+                  <td>
+                    <span class="status-badge" [class.ativo]="s.ativoProdutoServico !== 'N'">
+                      {{ s.ativoProdutoServico !== 'N' ? 'Ativo' : 'Inativo' }}
+                    </span>
+                  </td>
+                  <td class="coluna-acoes">
+                    <button type="button" class="btn-editar" (click)="editarServico(s)">Editar</button>
+                    <button type="button" class="btn-desativar" (click)="desativarServico(s)">Desativar</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  
+  </div>

@@ -1,1 +1,106 @@
-<p>meus-pedidos works!</p>
+<div class="pagina-meus-pedidos">
+
+    <header class="cabecalho-pedidos">
+      <span class="etiqueta">LOJA VIRTUAL</span>
+      <h1>Meus Pedidos</h1>
+      <p>Selecione a sua conta para acompanhar o histórico de pedidos e atendimentos.</p>
+    </header>
+  
+    <!-- SELEÇÃO DE CLIENTE -->
+    <section class="card-filtro">
+      <div class="campo-seletor">
+        <label for="clienteSelect">Identifique o seu Cadastro (Cliente):</label>
+        <select 
+          id="clienteSelect" 
+          [(ngModel)]="idClienteSelecionado" 
+          (change)="buscarPedidosCliente()"
+        >
+          <option [ngValue]="null">-- Selecione o seu nome para consultar --</option>
+          @for (cli of clientes; track cli.idpessoa) {
+            <option [value]="cli.idpessoa">{{ cli.nome }} (CPF: {{ cli.cpf }})</option>
+          }
+        </select>
+      </div>
+    </section>
+  
+    <!-- LISTA DE PEDIDOS DO CLIENTE -->
+    @if (carregandoPedidos) {
+      <p class="estado-carregando">A procurar pedidos no sistema...</p>
+    } @else if (mensagem) {
+      <div class="estado-vazio">
+        <p>{{ mensagem }}</p>
+      </div>
+    } @else if (pedidos.length > 0) {
+      <section class="grid-pedidos">
+        @for (p of pedidos; track p.idatendimento || p.id) {
+          <div class="card-pedido">
+            <div class="cabecalho-card-pedido">
+              <span class="numero-pedido">Pedido #{{ p.idatendimento || p.id }}</span>
+              <span class="badge-status" [class]="'status-' + (p.statusAtendimento || 'A').toLowerCase()">
+                {{ formatarStatus(p.statusAtendimento) }}
+              </span>
+            </div>
+  
+            <div class="corpo-card-pedido">
+              <p><strong>Data:</strong> {{ (p.dataAtendimento || p.data) | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p><strong>Total:</strong> R$ {{ (p.valorTotal || p.total || 0) | number:'1.2-2' }}</p>
+            </div>
+  
+            <button type="button" class="btn-detalhes" (click)="verDetalhes(p)">
+              Ver Detalhes do Pedido
+            </button>
+          </div>
+        }
+      </section>
+    }
+  
+    <!-- MODAL DE DETALHES DO PEDIDO -->
+    @if (pedidoSelecionadoDetalhes) {
+      <div class="overlay-modal" (click)="fecharDetalhes()">
+        <div class="conteudo-modal" (click)="$event.stopPropagation()">
+          
+          <div class="cabecalho-modal">
+            <h2>Detalhes do Pedido #{{ pedidoSelecionadoDetalhes.idatendimento || pedidoSelecionadoDetalhes.id }}</h2>
+            <button type="button" class="btn-fechar" (click)="fecharDetalhes()">✕</button>
+          </div>
+  
+          <div class="corpo-modal">
+            <p><strong>Situação:</strong> {{ formatarStatus(pedidoSelecionadoDetalhes.statusAtendimento) }}</p>
+            <p><strong>Data de Registro:</strong> {{ (pedidoSelecionadoDetalhes.dataAtendimento || pedidoSelecionadoDetalhes.data) | date:'dd/MM/yyyy HH:mm' }}</p>
+  
+            <h3>Itens do Pedido:</h3>
+            <div class="tabela-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Item / Serviço</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unit.</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of pedidoSelecionadoDetalhes.itens || pedidoSelecionadoDetalhes.atendimentoItens; track item.iditem) {
+                    <tr>
+                      <td>{{ item.item || item.nomeItem || 'Item #' + item.iditem }}</td>
+                      <td>{{ item.quantidadeItens || item.quantidade }}</td>
+                      <td>R$ {{ (item.valorUnitarioEntrada || item.preco || 0) | number:'1.2-2' }}</td>
+                      <td>
+                        R$ {{ ((item.quantidadeItens || item.quantidade) * (item.valorUnitarioEntrada || item.preco || 0)) | number:'1.2-2' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+  
+          <div class="rodape-modal">
+            <button type="button" class="btn-secundario" (click)="fecharDetalhes()">Fechar</button>
+          </div>
+  
+        </div>
+      </div>
+    }
+  
+  </div>
