@@ -37,7 +37,13 @@ export class CatalogoComponent implements OnInit {
 
   carregarCategorias() {
     this.http.get<any[]>(this.apiUrlCategorias).subscribe({
-      next: (res) => this.categorias = res || [],
+      next: (res) => {
+        const lista = res || [];
+        this.categorias = lista.map(c => ({
+          idcategoria: c.Idcategoria ?? c.idcategoria ?? c.idCategoria ?? c.Id,
+          nomeCategoria: c.NomeCategoria ?? c.nomeCategoria ?? c.categoria ?? c.nome
+        }));
+      },
       error: (err) => {
         console.error('Erro ao buscar categorias:', err);
         this.categorias = [];
@@ -52,17 +58,27 @@ export class CatalogoComponent implements OnInit {
         console.log('Itens recebidos do backend:', res);
         const listaBruta = res || [];
 
-        // Mapeamento flexível para aceitar qualquer estrutura do C#
         this.itens = listaBruta.map(i => {
-          const tipoCalculado = i.tipoItem || i.tipo || i.tipo_item || (i.unidade ? 'P' : 'S');
+          // Captura de propriedades respeitando PascalCase e camelCase
+          const id = i.Iditem ?? i.iditem ?? i.idItem ?? i.Id ?? i.id;
+          const nome = i.Item ?? i.item ?? i.Nome ?? i.nome ?? i.NomeItem ?? i.nomeItem ?? `Item #${id}`;
+          const descricao = i.DescricaoItem ?? i.descricaoItem ?? i.Descricao ?? i.descricao ?? '';
+          const idCat = i.Idcategoria ?? i.idcategoria ?? i.IdCategoria ?? i.idCategoria;
+          
+          // Captura do preço (verifica todas as variações de nomes vindos do C#)
+          const valorPreco = i.Preco ?? i.preco ?? i.PrecoVenda ?? i.precoVenda ?? i.preco_venda ?? i.ValorItem ?? i.valorItem ?? 0;
+          
+          // Captura do tipo
+          const tipoBruto = i.TipoItem ?? i.tipoItem ?? i.Tipo ?? i.tipo ?? i.tipo_item ?? (i.Unidade || i.unidade ? 'P' : 'S');
+
           return {
-            iditem: i.iditem || i.id || i.idItem,
-            item: i.item || i.nome || i.nomeItem || 'Item sem nome',
-            descricaoItem: i.descricaoItem || i.descricao || '',
-            idcategoria: i.idcategoria || i.idCategoria,
-            preco: i.preco || i.precoVenda || i.preco_venda || 0,
-            tipoItem: String(tipoCalculado).toUpperCase(),
-            quantidadeEstoque: i.quantidadeEstoque || i.quantidade || 99
+            iditem: id,
+            item: nome,
+            descricaoItem: descricao,
+            idcategoria: idCat,
+            preco: Number(valorPreco),
+            tipoItem: String(tipoBruto).toUpperCase(),
+            quantidadeEstoque: i.QuantidadeEstoque ?? i.quantidadeEstoque ?? i.quantidade ?? 99
           };
         });
 

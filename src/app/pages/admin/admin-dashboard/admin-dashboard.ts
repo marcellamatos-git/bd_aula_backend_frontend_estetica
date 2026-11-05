@@ -41,7 +41,14 @@ export class AdminDashboardComponent implements OnInit {
     this.carregandoEstoque = true;
     this.http.get<any[]>(this.apiUrlEstoque).subscribe({
       next: (res) => {
-        this.estoque = res || [];
+        const lista = res || [];
+        this.estoque = lista.map((e, index) => ({
+          iditem: e.iditem ?? e.idItem ?? e.id ?? (index + 1),
+          item: e.item ?? e.nome ?? e.nomeItem ?? e.descricaoItem ?? `Produto #${e.iditem ?? e.idItem ?? (index + 1)}`,
+          categoria: e.categoria ?? e.nomeCategoria ?? 'Geral',
+          quantidadeEstoque: e.quantidadeEstoque ?? e.quantidade_estoque ?? e.quantidade ?? 0,
+          unidade: e.unidade ?? 'UN'
+        }));
         this.carregandoEstoque = false;
       },
       error: (err) => {
@@ -55,12 +62,19 @@ export class AdminDashboardComponent implements OnInit {
     this.http.get<any[]>(this.apiUrlItens).subscribe({
       next: (res) => {
         const lista = res || [];
-        // Mantém todos os produtos para a seleção
-        this.produtos = lista.map(i => ({
-          iditem: i.iditem || i.id || i.idItem,
-          item: i.item || i.nome || i.nomeItem,
-          unidade: i.unidade || 'UN'
-        }));
+        this.produtos = lista
+          .filter(i => {
+            const tipo = String(i.tipoItem || i.tipo || i.tipo_item || '').toUpperCase();
+            return tipo === 'P' || i.unidade;
+          })
+          .map(i => {
+            const realId = Number(i.iditem ?? i.idItem ?? i.id);
+            return {
+              iditem: realId,
+              item: i.item ?? i.nome ?? i.nomeItem ?? `Produto #${realId}`,
+              unidade: i.unidade ?? 'UN'
+            };
+          });
       },
       error: (err) => console.error('Erro ao carregar produtos:', err)
     });
@@ -72,13 +86,13 @@ export class AdminDashboardComponent implements OnInit {
 
     const idItemNum = Number(this.entrada.iditem);
 
-    if (!idItemNum || isNaN(idItemNum)) {
+    if (!idItemNum || isNaN(idItemNum) || idItemNum < 1) {
       this.mensagemErro = 'Por favor, selecione um produto válido da lista.';
       return;
     }
 
-    if (this.entrada.quantidadeEntrada <= 0) {
-      this.mensagemErro = 'A quantidade de entrada deve ser maior que zero.';
+    if (this.entrada.quantidadeEntrada <= 0 || this.entrada.valorUnitarioEntrada <= 0) {
+      this.mensagemErro = 'A quantidade e o valor unitário devem ser maiores que zero.';
       return;
     }
 
@@ -87,28 +101,37 @@ export class AdminDashboardComponent implements OnInit {
     const produtoSel = this.produtos.find(p => p.iditem === idItemNum);
     const unidadeProd = produtoSel?.unidade || 'UN';
 
-    // Monta o DTO exato da tabela entrada_produto
-    const payloadEntrada = {
-      iditem: idItemNum,
-      quantidadeEntrada: Number(this.entrada.quantidadeEntrada),
-      unidade: unidadeProd,
-      valorUnitarioEntrada: Number(this.entrada.valorUnitarioEntrada),
-      dataEntradaProduto: this.entrada.dataEntradaProduto ? this.entrada.dataEntradaProduto : new Date().toISOString().split('T')[0]
-    };
+    // Garante que a data vá estritamente como YYYY-MM-DD (DateOnly do C#)
+    const dataOnly = this.entrada.dataEntradaProduto 
+      ? this.entrada.dataEntradaProduto.split('T')[0]
+      : new Date().toISOString().split('T')[0];
 
-    console.log('Enviando entrada válida:', payloadEntrada);
+    // Payload exato esperado pelo EntradaProdutoCreateDto
+    const payloadEntrada = {
+      Iditem: idItemNum,
+      DataEntradaProduto: dataOnly,
+      QuantidadeEntrada: Number(this.entrada.quantidadeEntrada),
+      Unidade: unidadeProd,
+      ValorUnitarioEntrada: Number(this.entrada.valorUnitarioEntrada)
+    };
 
     this.http.post(this.apiUrlEntradas, payloadEntrada).subscribe({
       next: (res) => {
-        console.log('Entrada registrada com sucesso:', res);
         this.mensagemSucesso = 'Entrada de produto registrada com sucesso!';
         this.limparFormulario();
         this.carregarEstoque();
         this.salvandoEntrada = false;
       },
       error: (err) => {
-        console.error('Erro 500 do servidor ao registrar entrada:', err);
-        this.mensagemErro = 'Erro 500 no banco MySQL. Certifique-se de cadastrar o produto em "Cadastrar Produtos" antes de dar entrada.';
+        console.error('Erro detalhado da API:', err);
+        if (err.error?.mensagem) {
+          this.mensagemErro = err.error.mensagem;
+        } else if (err.error?.errors) {
+          const detalhes = Object.values(err.error.errors).flat().join(' | ');
+          this.mensagemErro = `Erro de Validação: ${detalhes}`;
+        } else {
+          this.mensagemErro = 'Não foi possível registrar a entrada. Verifique o cadastro do produto no banco.';
+        }
         this.salvandoEntrada = false;
       }
     });
