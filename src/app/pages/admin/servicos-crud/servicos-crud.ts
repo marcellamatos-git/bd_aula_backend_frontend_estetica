@@ -14,7 +14,8 @@ export class ServicosCrudComponent implements OnInit {
   servicos: any[] = [];
   categorias: any[] = [];
 
-  // Variável que o HTML verifica para saber se está editando
+  // Variáveis exigidas pelo HTML
+  carregando: boolean = false;
   idServicoEdicao: number | null = null;
   salvando: boolean = false;
 
@@ -24,8 +25,8 @@ export class ServicosCrudComponent implements OnInit {
     descricaoItem: '',
     preco: 0,
     idcategoria: null as number | null,
-    tipoItem: 'S', // 'S' para Serviço
-    ativoProdutoServico: 'A'
+    tipoItem: 'S',
+    ativoProdutoServico: 'S'
   };
 
   mensagemSucesso: string = '';
@@ -42,12 +43,18 @@ export class ServicosCrudComponent implements OnInit {
   }
 
   carregarServicos() {
+    this.carregando = true;
     this.http.get<any[]>(this.apiUrlItens).subscribe({
       next: (res) => {
         const lista = res || [];
         this.servicos = lista.filter(i => String(i.tipoItem || i.tipo || '').toUpperCase() === 'S');
+        this.carregando = false;
       },
-      error: (err) => console.error('Erro ao carregar serviços:', err)
+      error: (err) => {
+        console.error('Erro ao carregar serviços:', err);
+        this.servicos = [];
+        this.carregando = false;
+      }
     });
   }
 
@@ -76,7 +83,7 @@ export class ServicosCrudComponent implements OnInit {
       preco: Number(this.servico.preco),
       idcategoria: this.servico.idcategoria ? Number(this.servico.idcategoria) : 1,
       tipoItem: 'S',
-      ativoProdutoServico: this.servico.ativoProdutoServico
+      ativoProdutoServico: this.servico.ativoProdutoServico || 'S'
     };
 
     if (this.idServicoEdicao) {
@@ -110,17 +117,28 @@ export class ServicosCrudComponent implements OnInit {
     }
   }
 
+  // Aliases chamados pelo HTML: (click)="editarServico(s)" e (click)="editar(s)"
+  editarServico(s: any) {
+    this.editar(s);
+  }
+
   editar(s: any) {
-    this.idServicoEdicao = s.iditem || s.id;
+    this.idServicoEdicao = s.iditem || s.Iditem || s.id;
     this.servico = {
       iditem: this.idServicoEdicao,
-      item: s.item || s.nome,
-      descricaoItem: s.descricaoItem || s.descricao || '',
-      preco: s.preco || 0,
-      idcategoria: s.idcategoria || null,
+      item: s.item || s.Item || s.nome,
+      descricaoItem: s.descricaoItem || s.DescricaoItem || s.descricao || '',
+      preco: s.preco || s.Preco || 0,
+      idcategoria: s.idcategoria || s.Idcategoria || null,
       tipoItem: 'S',
-      ativoProdutoServico: s.ativoProdutoServico || 'A'
+      ativoProdutoServico: s.ativoProdutoServico || s.AtivoProdutoServico || 'S'
     };
+  }
+
+  // Aliases chamados pelo HTML: (click)="desativarServico(s)" e (click)="desativar(id)"
+  desativarServico(s: any) {
+    const id = typeof s === 'object' ? (s.iditem || s.Iditem || s.id) : s;
+    this.desativar(id);
   }
 
   desativar(id: number) {
@@ -145,7 +163,7 @@ export class ServicosCrudComponent implements OnInit {
       preco: 0,
       idcategoria: null,
       tipoItem: 'S',
-      ativoProdutoServico: 'A'
+      ativoProdutoServico: 'S'
     };
   }
 }

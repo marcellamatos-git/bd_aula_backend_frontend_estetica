@@ -1,83 +1,102 @@
-<div class="pagina-pedidos-admin">
-
-    <header class="cabecalho-admin">
-      <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
-      <h1>Gestão de Pedidos e Atendimentos</h1>
-      <p>Acompanhe as compras dos clientes e atualize o status dos atendimentos.</p>
-    </header>
-  
-    @if (mensagemSucesso) {
-      <div class="alerta sucesso">{{ mensagemSucesso }}</div>
-    }
-  
-    @if (mensagemErro) {
-      <div class="alerta erro">{{ mensagemErro }}</div>
-    }
-  
-    <section class="card-painel">
-      <div class="barra-filtros">
-        <div class="campo-filtro">
-          <label for="statusSelect">Filtrar por Situação:</label>
-          <select id="statusSelect" [(ngModel)]="statusFiltro" (change)="aplicarFiltro()">
-            <option value="">Todos os Pedidos</option>
-            <option value="A">Em Aberto</option>
-            <option value="P">Em Processamento</option>
-            <option value="C">Concluídos</option>
-            <option value="X">Cancelados</option>
-          </select>
-        </div>
-      </div>
-  
-      @if (carregando) {
-        <p class="carregando">Carregando pedidos...</p>
-      } @else if (pedidosFiltrados.length === 0) {
-        <p class="vazio">Nenhum pedido encontrado com os filtros selecionados.</p>
-      } @else {
-        <div class="tabela-container">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Cliente</th>
-                <th>Data</th>
-                <th>Valor Total</th>
-                <th>Situação</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of pedidosFiltrados; track p.idatendimento || p.id) {
-                <tr>
-                  <td>#{{ p.idatendimento || p.id }}</td>
-                  <td>
-                    <strong>{{ p.nomePessoa || p.nomeCliente || 'Cliente #' + (p.idpessoa || p.idCliente) }}</strong>
-                  </td>
-                  <td>{{ (p.dataAtendimento || p.data) | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>R$ {{ (p.valorTotal || p.total || 0) | number:'1.2-2' }}</td>
-                  <td>
-                    <span class="badge-status" [class]="'status-' + (p.statusAtendimento || 'A').toLowerCase()">
-                      {{ formatarStatus(p.statusAtendimento) }}
-                    </span>
-                  </td>
-                  <td class="coluna-acoes">
-                    <button type="button" class="btn-detalhes" (click)="verDetalhes(p)">Ver Itens</button>
-                    <select 
-                      [ngModel]="p.statusAtendimento || 'A'" 
-                      (change)="atualizarStatus(p, $any($event.target).value)"
-                      class="seletor-status"
-                    >
-                      <option value="A">Aberto</option>
-                      <option value="P">Em Processamento</option>
-                      <option value="C">Concluído</option>
-                      <option value="X">Cancelado</option>
-                    </select>
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      }
-    </section>
-  
+<div class="container-admin">
+  <div class="header-section">
+    <p class="subtitle">PAINEL ADMINISTRATIVO</p>
+    <h2>Gestão de Pedidos e Atendimentos</h2>
+    <p class="description">Acompanhe as compras dos clientes e atualize o status dos atendimentos.</p>
   </div>
+
+  <div class="card-tabela">
+    <div class="filtro-box">
+      <label for="situacao">Filtrar por Situação:</label>
+      <select id="situacao" [(ngModel)]="filtroSituacao" (change)="aplicarFiltro()">
+        <option value="TODOS">Todos os Pedidos</option>
+        <option value="A">Aberto</option>
+        <option value="C">Concluído</option>
+        <option value="F">Finalizado</option>
+      </select>
+    </div>
+
+    <table class="tabela-pedidos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Data</th>
+          <th>Valor Total</th>
+          <th>Situação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of pedidosFiltrados">
+          <td>#{{ p.idatendimento }}</td>
+          <td><strong>{{ p.nomePessoa }}</strong></td>
+          <td>{{ p.dataAtendimento | date:'dd/MM/yyyy HH:mm' }}</td>
+          <td>R$ {{ calcularTotalPedido(p.itens) | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge" [ngClass]="(p.statusAtendimento || 'A').toLowerCase()">
+              {{ formatarStatus(p.statusAtendimento) }}
+            </span>
+          </td>
+          <td class="acoes-cell">
+            <button class="btn-ver-itens" (click)="verItensPedido(p.idatendimento)">
+              Ver Itens
+            </button>
+            <select [ngModel]="p.statusAtendimento" (ngModelChange)="atualizarStatus(p, $event)" class="select-status">
+              <option value="A">Aberto</option>
+              <option value="C">Concluído</option>
+              <option value="F">Finalizado</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MODAL VER ITENS -->
+<div *ngIf="exibirModalItens" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Itens do Pedido #{{ pedidoSelecionado?.idatendimento }}</h3>
+      <button class="btn-close-x" (click)="fecharModal()">×</button>
+    </div>
+    
+    <div class="modal-body">
+      <p><strong>Cliente:</strong> {{ pedidoSelecionado?.nomePessoa }}</p>
+      <p><strong>Data:</strong> {{ pedidoSelecionado?.dataAtendimento | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p><strong>Status Actual:</strong> {{ formatarStatus(pedidoSelecionado?.statusAtendimento) }}</p>
+
+      <table class="tabela-modal">
+        <thead>
+          <tr>
+            <th>Item / Produto</th>
+            <th>Qtd</th>
+            <th>Valor Unit.</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of pedidoSelecionado?.itens">
+            <td>{{ item.nomeItem }}</td>
+            <td>{{ item.quantidadeItens }}</td>
+            <td>R$ {{ item.valorUnitarioEntrada | number:'1.2-2' }}</td>
+            <td>R$ {{ (item.quantidadeItens * item.valorUnitarioEntrada) | number:'1.2-2' }}</td>
+          </tr>
+          <tr *ngIf="!pedidoSelecionado?.itens || pedidoSelecionado?.itens.length === 0">
+            <td colspan="4" style="text-align: center;">Nenhum item cadastrado neste pedido.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="total-modal">
+        <strong>Total do Pedido:</strong> 
+        <span>R$ {{ calcularTotalPedido(pedidoSelecionado?.itens) | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-fechar" (click)="fecharModal()">Fechar</button>
+    </div>
+  </div>
+</div>

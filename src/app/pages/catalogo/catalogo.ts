@@ -40,8 +40,8 @@ export class CatalogoComponent implements OnInit {
       next: (res) => {
         const lista = res || [];
         this.categorias = lista.map(c => ({
-          idcategoria: c.Idcategoria ?? c.idcategoria ?? c.idCategoria ?? c.Id,
-          nomeCategoria: c.NomeCategoria ?? c.nomeCategoria ?? c.categoria ?? c.nome
+          idcategoria: c.Idcategoria ?? c.idcategoria ?? c.IdCategoria ?? c.Id ?? c.id,
+          nomeCategoria: c.Categoria1 ?? c.categoria1 ?? c.NomeCategoria ?? c.nomeCategoria ?? c.categoria ?? c.nome
         }));
       },
       error: (err) => {
@@ -59,16 +59,13 @@ export class CatalogoComponent implements OnInit {
         const listaBruta = res || [];
 
         this.itens = listaBruta.map(i => {
-          // Captura de propriedades respeitando PascalCase e camelCase
           const id = i.Iditem ?? i.iditem ?? i.idItem ?? i.Id ?? i.id;
           const nome = i.Item ?? i.item ?? i.Nome ?? i.nome ?? i.NomeItem ?? i.nomeItem ?? `Item #${id}`;
           const descricao = i.DescricaoItem ?? i.descricaoItem ?? i.Descricao ?? i.descricao ?? '';
           const idCat = i.Idcategoria ?? i.idcategoria ?? i.IdCategoria ?? i.idCategoria;
           
-          // Captura do preço (verifica todas as variações de nomes vindos do C#)
           const valorPreco = i.Preco ?? i.preco ?? i.PrecoVenda ?? i.precoVenda ?? i.preco_venda ?? i.ValorItem ?? i.valorItem ?? 0;
           
-          // Captura do tipo
           const tipoBruto = i.TipoItem ?? i.tipoItem ?? i.Tipo ?? i.tipo ?? i.tipo_item ?? (i.Unidade || i.unidade ? 'P' : 'S');
 
           return {
@@ -105,14 +102,14 @@ export class CatalogoComponent implements OnInit {
       const descItem = String(item.descricaoItem || '').toLowerCase();
       const busca = this.termoBusca.toLowerCase().trim();
 
-      // Filtro por Nome/Descrição
+      // 1. Filtro por Nome/Descrição
       const atendeNome = !busca || nomeItem.includes(busca) || descItem.includes(busca);
 
-      // Filtro por Categoria
+      // 2. Filtro por Categoria
       const atendeCategoria = !this.categoriaSelecionada || 
         String(item.idcategoria) === String(this.categoriaSelecionada);
 
-      // Filtro por Tipo (P = Produto, S = Serviço)
+      // 3. Filtro por Tipo (P = Produto, S = Serviço)
       const atendeTipo = !this.tipoSelecionado || 
         String(item.tipoItem).toUpperCase() === String(this.tipoSelecionado).toUpperCase();
 

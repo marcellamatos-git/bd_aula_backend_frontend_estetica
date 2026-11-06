@@ -1,139 +1,164 @@
-<div class="pagina-admin">
-
-  <header class="cabecalho-admin">
-    <span class="etiqueta">PAINEL ADMINISTRATIVO</span>
-    <h1>Gestão de Estoque & Entradas</h1>
-    <p>Acompanhe os saldos de produtos e registre novas entradas de mercadorias.</p>
-  </header>
-
-  <!-- RESUMO ESTATÍSTICO -->
-  <section class="cards-estatisticas">
-    <div class="card-estatistica">
-      <span class="titulo-estatistica">PRODUTOS CADASTRADOS</span>
-      <strong class="valor-estatistica">{{ produtos.length }}</strong>
+<div class="painel-container admin">
+  <div class="header-secao" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1>Painel Administrativo</h1>
+      <p>Área restrita para controle de clientes, estoque e gestão de pedidos.</p>
     </div>
-    <div class="card-estatistica">
-      <span class="titulo-estatistica">ITENS EM ESTOQUE</span>
-      <strong class="valor-estatistica">{{ estoque.length }}</strong>
+    <button class="btn-voltar-inicio" (click)="sairAdmin()">Sair / Sair do Admin</button>
+  </div>
+
+  <div class="grid-cards" style="margin-bottom: 2rem;">
+    <!-- CLIENTES -->
+    <div class="card-atalho" (click)="navegarPara('/clientes')">
+      <div class="icone-card">👤</div>
+      <div class="texto-card">
+        <h3>Clientes</h3>
+        <p>Cadastre e gerencie a lista de clientes (Total: {{ totalClientes }}).</p>
+      </div>
     </div>
-    <div class="card-estatistica">
-      <span class="titulo-estatistica">STATUS DA API</span>
-      <strong class="valor-estatistica status-ok">CONECTADO</strong>
+
+    <!-- ESTOQUE / PRODUTOS -->
+    <div class="card-atalho" (click)="navegarPara('/produtos-crud')">
+      <div class="icone-card">📈</div>
+      <div class="texto-card">
+        <h3>Estoque / Produtos</h3>
+        <p>Gerencie produtos, serviços e saldos de estoque.</p>
+      </div>
     </div>
-  </section>
 
-  @if (mensagemSucesso) {
-    <div class="alerta sucesso">{{ mensagemSucesso }}</div>
-  }
+    <!-- GESTÃO DE PEDIDOS -->
+    <div class="card-atalho" (click)="navegarPara('/pedidos-admin')">
+      <div class="icone-card">📝</div>
+      <div class="texto-card">
+        <h3>Gestão de Pedidos</h3>
+        <p>Acompanhe e atenda pedidos dos clientes (Total: {{ totalPedidos }}).</p>
+      </div>
+    </div>
+  </div>
 
-  @if (mensagemErro) {
-    <div class="alerta erro">{{ mensagemErro }}</div>
-  }
+  <hr style="margin: 2rem 0; border: 0; border-top: 1px solid #eee;" />
 
-  <!-- FORMULÁRIO DE ENTRADA DE PRODUTO -->
-  <section class="card-painel">
-    <h2>Registrar Entrada de Produto</h2>
+  <div *ngIf="mensagemSucesso" class="alerta sucesso" style="background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; margin-bottom: 1rem;">
+    ✓ {{ mensagemSucesso }}
+  </div>
+  <div *ngIf="mensagemErro" class="alerta erro" style="background: #f8f9fa; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 1rem;">
+    ⚠ {{ mensagemErro }}
+  </div>
+
+  <div class="card-formulario" style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 2rem;">
+    <h3>Registrar Entrada de Estoque / Cadastrar Item</h3>
+    
+    <div style="margin-bottom: 1rem;">
+      <label>
+        <input type="checkbox" [(ngModel)]="modoNovoItem" (change)="limparFormulario()" /> 
+        Cadastrar um Novo Item/Serviço
+      </label>
+    </div>
 
     <form (ngSubmit)="registrarEntrada()">
-      <div class="campos-grid">
-        
-        <div class="campo campo-largo">
-          <label for="produtoSelect">Produto *</label>
-          <select id="produtoSelect" name="iditem" [(ngModel)]="entrada.iditem" required>
-            <option [ngValue]="null" disabled>-- Selecione um produto cadastrado --</option>
-            @for (p of produtos; track p.iditem || $index) {
-              <option [value]="p.iditem">#{{ p.iditem }} - {{ p.item }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="campo">
-          <label for="qtdInput">Quantidade *</label>
-          <input 
-            type="number" 
-            id="qtdInput" 
-            name="quantidadeEntrada" 
-            [(ngModel)]="entrada.quantidadeEntrada" 
-            min="1" 
-            required 
-          />
-        </div>
-
-        <div class="campo">
-          <label for="valorInput">Valor Unitário de Entrada (R$)</label>
-          <input 
-            type="number" 
-            id="valorInput" 
-            name="valorUnitarioEntrada" 
-            [(ngModel)]="entrada.valorUnitarioEntrada" 
-            step="0.01" 
-            min="0" 
-          />
-        </div>
-
-        <div class="campo">
-          <label for="dataInput">Data da Entrada</label>
-          <input 
-            type="date" 
-            id="dataInput" 
-            name="dataEntradaProduto" 
-            [(ngModel)]="entrada.dataEntradaProduto" 
-          />
-        </div>
-
+      <div *ngIf="!modoNovoItem" style="margin-bottom: 1rem;">
+        <label>Selecione o Produto:</label>
+        <select [(ngModel)]="entrada.iditem" name="iditem" style="width: 100%; padding: 8px; margin-top: 4px;">
+          <option [ngValue]="null">-- Escolha um Produto --</option>
+          <option *ngFor="let p of produtos" [value]="p.iditem || p.Iditem || p.id">
+            #{{ p.iditem || p.Iditem || p.id }} - {{ p.item || p.Item }} (Estoque Atual: {{ p.quantidadeEstoque || 0 }})
+          </option>
+        </select>
       </div>
 
-      <div class="acoes-form">
-        <button type="button" class="btn-secundario" (click)="limparFormulario()">Limpar</button>
-        <button type="submit" class="btn-primario" [disabled]="salvandoEntrada || !entrada.iditem">
-          {{ salvandoEntrada ? 'Salvando...' : 'Salvar Entrada' }}
-        </button>
+      <div *ngIf="modoNovoItem">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label>Nome do Item:</label>
+            <input type="text" [(ngModel)]="entrada.item" name="item" required style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>Tipo:</label>
+            <select [(ngModel)]="entrada.tipoItem" name="tipoItem" style="width: 100%; padding: 8px;">
+              <option value="P">Produto</option>
+              <option value="S">Serviço</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label>Preço Venda (R$):</label>
+            <input type="number" [(ngModel)]="entrada.preco" name="preco" step="0.01" style="width: 100%; padding: 8px;" />
+          </div>
+          <div>
+            <label>Categoria:</label>
+            <select [(ngModel)]="entrada.idcategoria" name="idcategoria" style="width: 100%; padding: 8px;">
+              <option *ngFor="let c of categorias" [value]="c.idcategoria || c.Idcategoria || c.id">
+                {{ c.categoria1 || c.Categoria1 || c.nomeCategoria || c.categoria || 'Categoria #' + (c.idcategoria || c.Idcategoria) }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label>Descrição:</label>
+          <textarea [(ngModel)]="entrada.descricaoItem" name="descricaoItem" style="width: 100%; padding: 8px;"></textarea>
+        </div>
       </div>
+
+      <div *ngIf="modoNovoItem || entrada.tipoItem === 'P'" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+        <div>
+          <label>Quantidade de Entrada:</label>
+          <input type="number" [(ngModel)]="entrada.quantidadeEntrada" name="quantidadeEntrada" min="1" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>Custo Unitário (R$):</label>
+          <input type="number" [(ngModel)]="entrada.valorUnitarioEntrada" name="valorUnitarioEntrada" step="0.01" style="width: 100%; padding: 8px;" />
+        </div>
+        <div>
+          <label>Data Entrada:</label>
+          <input type="date" [(ngModel)]="entrada.dataEntradaProduto" name="dataEntradaProduto" style="width: 100%; padding: 8px;" />
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="salvandoEntrada" style="background: #800020; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer;">
+        {{ salvandoEntrada ? 'Salvando...' : 'Confirmar Registro' }}
+      </button>
     </form>
-  </section>
+  </div>
 
-  <!-- TABELA DE CONSULTA DE ESTOQUE -->
-  <section class="card-painel">
-    <h2>Consulta de Estoque Atual</h2>
-
-    @if (carregandoEstoque) {
-      <p class="carregando">A carregar saldos de estoque...</p>
-    } @else if (estoque.length === 0) {
-      <p class="vazio">Nenhum registro de estoque encontrado.</p>
-    } @else {
-      <div class="tabela-container">
-        <table>
-          <thead>
-            <tr>
-              <th>ID Item</th>
-              <th>Produto</th>
-              <th>Categoria</th>
-              <th>Quantidade em Estoque</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of estoque; track item.iditem || $index) {
-              <tr>
-                <td>#{{ item.iditem }}</td>
-                <td><strong>{{ item.item }}</strong></td>
-                <td>{{ item.categoria }}</td>
-                <td>
-                  <span class="qtd-badge" [class.alerta-qtd]="item.quantidadeEstoque <= 5">
-                    {{ item.quantidadeEstoque }} {{ item.unidade }}
-                  </span>
-                </td>
-                <td>
-                  <span class="status-badge" [class.critico]="item.quantidadeEstoque <= 2">
-                    {{ item.quantidadeEstoque > 2 ? 'Normal' : 'Baixo' }}
-                  </span>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+  <div class="card-tabela" style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+      <h3>Visão Geral do Estoque</h3>
+      <div style="display: flex; gap: 0.5rem;">
+        <input type="number" placeholder="Buscar por ID..." [(ngModel)]="buscaIdItem" style="padding: 6px;" />
+        <button (click)="buscarPorId()" style="padding: 6px 12px; background: #4a154b; color: white; border: none; border-radius: 4px;">Buscar</button>
+        <button (click)="carregarItens()" style="padding: 6px 12px; background: #6c757d; color: white; border: none; border-radius: 4px;">Limpar</button>
       </div>
-    }
-  </section>
+    </div>
 
+    <table style="width: 100%; border-collapse: collapse;">
+      <thead>
+        <tr style="background: #f8f9fa; border-bottom: 2px solid #dee2e6; text-align: left;">
+          <th style="padding: 8px;">ID</th>
+          <th style="padding: 8px;">Item</th>
+          <th style="padding: 8px;">Tipo</th>
+          <th style="padding: 8px;">Preço</th>
+          <th style="padding: 8px;">Estoque Atual</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of estoque" style="border-bottom: 1px solid #dee2e6;">
+          <td style="padding: 8px;">#{{ item.iditem }}</td>
+          <td style="padding: 8px;"><strong>{{ item.item }}</strong></td>
+          <td style="padding: 8px;">{{ item.tipoItem === 'S' ? 'Serviço' : 'Produto' }}</td>
+          <td style="padding: 8px;">R$ {{ item.preco | number:'1.2-2' }}</td>
+          <td style="padding: 8px;">
+            <span [style.color]="item.quantidadeEstoque <= 5 && item.tipoItem === 'P' ? 'red' : 'inherit'">
+              {{ item.tipoItem === 'S' ? 'N/A' : item.quantidadeEstoque }}
+            </span>
+          </td>
+        </tr>
+        <tr *ngIf="estoque.length === 0">
+          <td colspan="5" style="text-align: center; padding: 1rem;">Nenhum item localizado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

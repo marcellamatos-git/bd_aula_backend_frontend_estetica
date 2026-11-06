@@ -1,45 +1,33 @@
-<div class="layout">
-  <!-- SIDERBAR FIXA EM TODAS AS PÁGINAS -->
-  <aside class="sidebar">
-    <div class="brand">
-      <span class="brand-icon">✿</span>
-      <div>
-        <h2>Essenza</h2>
-        <p>Estética & Bem-Estar</p>
+<div class="painel-container">
+  <div class="header-secao">
+    <h1>Painel Inicial</h1>
+    <p>Selecione uma opção abaixo para navegar pelo catálogo e seu carrinho.</p>
+  </div>
+
+  <div class="grid-cards">
+    <!-- PRODUTOS & SERVIÇOS -->
+    <div class="card-atalho" (click)="navegarPara('/catalogo')">
+      <div class="icone-card">📦</div>
+      <div class="texto-card">
+        <h3>Produtos & Serviços</h3>
+        <p>Acesse o catálogo completo para visualização.</p>
       </div>
     </div>
 
-    <p class="menu-label">MENU PRINCIPAL</p>
-
-    <nav class="menu-principal">
-      <a routerLink="/inicio" routerLinkActive="ativo" class="item-menu">
-        <i>&#8962;</i> Início
-      </a>
-      <a routerLink="/clientes" routerLinkActive="ativo" class="item-menu">
-        <i>&#128100;</i> Clientes
-      </a>
-      <a routerLink="/catalogo" routerLinkActive="ativo" class="item-menu">
-        <i>&#128230;</i> Produtos
-      </a>
-      <a routerLink="/carrinho" routerLinkActive="ativo" class="item-menu">
-        <i>&#128722;</i> Carrinho / Pedidos
-      </a>
-      <a routerLink="/admin" routerLinkActive="ativo" class="item-menu">
-        <i>&#128200;</i> Estoque / Admin
-      </a>
-      <a routerLink="/pedidos-admin" routerLinkActive="ativo" class="item-menu">
-        <i>&#128221;</i> Gestão de Pedidos
-      </a>
-    </nav>
-
-    <div class="sidebar-footer">
-      Sistema de Gestão<br />
-      <span>Versão inicial</span>
+    <!-- CARRINHO -->
+    <div class="card-atalho" (click)="navegarPara('/carrinho')">
+      <div class="icone-card">🛒</div>
+      <div class="texto-card">
+        <h3>Carrinho / Pedidos</h3>
+        <p>Monte pedidos e confira o carrinho de compras.</p>
+      </div>
     </div>
-  </aside>
+  </div>
 
-  <!-- ÁREA ONDE AS PÁGINAS VÃO CARREGAR DAQUI EM DIANTE -->
-  <main class="main-content">
-    <router-outlet></router-outlet>
-  </main>
+  <!-- ATALHO PARA O PAINEL ADMIN -->
+  <div class="rodape-admin">
+    <button class="btn-acesso-admin" (click)="navegarPara('/admin')">
+      🔐 Ir para o Painel Administrativo
+    </button>
+  </div>
 </div>
