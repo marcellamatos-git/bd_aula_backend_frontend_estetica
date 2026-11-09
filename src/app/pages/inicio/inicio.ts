@@ -10,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
   styleUrl: './inicio.css'
 })
 export class InicioComponent {
+
   constructor(private router: Router) {}
 
   navegarPara(rota: string): void {

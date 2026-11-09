@@ -1,102 +1,152 @@
+
 <div class="pagina-carrinho">
 
-  <header class="cabecalho-carrinho">
-    <span class="etiqueta">LOJA VIRTUAL</span>
-    <h1>Carrinho de Compras</h1>
-    <p>Confira os seus itens e selecione o cliente para concluir a compra.</p>
-  </header>
+  <div class="cabecalho-carrinho">
+    <div>
+      <span class="etiqueta">ESSENZA</span>
+      <h1>Meu Carrinho</h1>
+      <p>Confira seus produtos e serviços antes de finalizar o pedido.</p>
+    </div>
+
+    <a routerLink="/catalogo" class="btn-voltar">
+      Continuar comprando
+    </a>
+  </div>
 
   @if (mensagemSucesso) {
-    <div class="alerta sucesso">{{ mensagemSucesso }}</div>
+    <div class="mensagem sucesso">
+      {{ mensagemSucesso }}
+    </div>
   }
 
   @if (mensagemErro) {
-    <div class="alerta erro">{{ mensagemErro }}</div>
+    <div class="mensagem erro">
+      {{ mensagemErro }}
+    </div>
   }
 
-  @if (itens.length === 0) {
-    <div class="carrinho-vazio">
-      <p>O seu carrinho está vazio.</p>
-      <a routerLink="/catalogo" class="btn-voltar">Explorar Catálogo</a>
-    </div>
-  } @else {
-    <div class="conteudo-carrinho">
-      
-      <!-- TABELA/LISTA DE ITENS -->
-      <div class="lista-itens">
-        <table>
-          <thead>
+  @if (itens.length > 0) {
+
+    <div class="tabela-carrinho">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Tipo</th>
+            <th>Valor unitário</th>
+            <th>Quantidade</th>
+            <th>Subtotal</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @for (item of itens; track item.iditem) {
             <tr>
-              <th>Item</th>
-              <th>Tipo</th>
-              <th>Preço Unit.</th>
-              <th>Qtd.</th>
-              <th>Subtotal</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (item of itens; track item.iditem) {
-              <tr>
-                <td>
-                  <strong>{{ item.item }}</strong>
-                  <small *ngIf="item.descricaoItem">{{ item.descricaoItem }}</small>
-                </td>
-                <td>
-                  <span class="badge" [class.servico]="item.tipoItem === 'S'">
-                    {{ item.tipoItem === 'S' ? 'Serviço' : 'Produto' }}
-                  </span>
-                </td>
-                <td>R$ {{ item.preco | number:'1.2-2' }}</td>
-                <td class="coluna-qtd">
-                  <button type="button" (click)="alterarQuantidade(item, -1)">-</button>
-                  <span>{{ item.quantidade }}</span>
-                  <button type="button" (click)="alterarQuantidade(item, 1)">+</button>
-                </td>
-                <td><strong>R$ {{ (item.preco * item.quantidade) | number:'1.2-2' }}</strong></td>
-                <td>
-                  <button type="button" class="btn-remover" (click)="remover(item.iditem)">
-                    Remover
+              <td>
+                <strong>{{ item.item }}</strong>
+                <small>{{ item.descricaoItem }}</small>
+              </td>
+
+              <td>
+                {{ item.tipoItem === 'P' ? 'Produto' : 'Serviço' }}
+              </td>
+
+              <td>
+                R$ {{ item.preco | number:'1.2-2' }}
+              </td>
+
+              <td>
+                <div class="controle-quantidade">
+                  <button
+                    type="button"
+                    (click)="alterarQuantidade(item, -1)">
+                    -
                   </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+
+                  <span>{{ item.quantidade }}</span>
+
+                  <button
+                    type="button"
+                    (click)="alterarQuantidade(item, 1)">
+                    +
+                  </button>
+                </div>
+              </td>
+
+              <td>
+                <strong>
+                  R$ {{ item.preco * item.quantidade | number:'1.2-2' }}
+                </strong>
+              </td>
+
+              <td>
+                <button
+                  type="button"
+                  class="btn-remover"
+                  (click)="remover(item)">
+                  Remover
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="resumo-carrinho">
+
+      <h2>Resumo do pedido</h2>
+
+      <div class="linha-total">
+        <span>Total</span>
+        <strong>R$ {{ total | number:'1.2-2' }}</strong>
       </div>
 
-      <!-- PAINEL DE RESUMO E FINALIZAÇÃO -->
-      <div class="resumo-pedido">
-        <h2>Resumo do Pedido</h2>
+      <div class="campo-cliente">
+        <label for="cliente">Selecione o cliente</label>
 
-        <div class="campo-grupo">
-          <label for="cliente">Selecione o Cliente *</label>
-          <select id="cliente" [(ngModel)]="idClienteSelecionado">
-            <option [ngValue]="null">-- Selecione um cliente --</option>
-            @for (cli of clientes; track cli.idpessoa) {
-              <option [value]="cli.idpessoa">{{ cli.nome }} (CPF: {{ cli.cpf }})</option>
-            }
-          </select>
-        </div>
+        <select
+          id="cliente"
+          name="cliente"
+          [(ngModel)]="idClienteSelecionado">
 
-        <div class="linha-resumo total">
-          <span>Valor Total:</span>
-          <strong>R$ {{ total | number:'1.2-2' }}</strong>
-        </div>
+          <option [ngValue]="null">
+            Selecione um cliente
+          </option>
 
-        <button 
-          type="button" 
-          class="btn-finalizar" 
-          [disabled]="carregando"
-          (click)="finalizarPedido()"
-        >
-          {{ carregando ? 'A processar...' : 'Finalizar Pedido' }}
-        </button>
+          @for (cli of clientes; track cli.idpessoa) {
+            <option [ngValue]="cli.idpessoa">
+              {{ cli.nome }}
+            </option>
+          }
 
-        <a routerLink="/catalogo" class="link-continuar">Continuar a comprar</a>
+        </select>
       </div>
+
+      <button
+        type="button"
+        class="btn-finalizar"
+        [disabled]="carregando"
+        (click)="finalizarPedido()">
+
+        {{ carregando ? 'Finalizando...' : 'Finalizar pedido' }}
+
+      </button>
 
     </div>
+
+  } @else {
+
+    <div class="carrinho-vazio">
+      <h2>Seu carrinho está vazio</h2>
+      <p>Adicione produtos ou serviços para continuar.</p>
+
+      <a routerLink="/catalogo" class="btn-voltar">
+        Ir para o catálogo
+      </a>
+    </div>
+
   }
 
 </div>

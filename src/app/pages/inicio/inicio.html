@@ -1,33 +1,74 @@
+
 <div class="painel-container">
+
   <div class="header-secao">
     <h1>Painel Inicial</h1>
-    <p>Selecione uma opção abaixo para navegar pelo catálogo e seu carrinho.</p>
+    <p>Selecione uma opção abaixo para navegar pelo catálogo, realizar compras e consultar seus pedidos.</p>
   </div>
 
   <div class="grid-cards">
-    <!-- PRODUTOS & SERVIÇOS -->
+
+    <!-- PRODUTOS E SERVIÇOS -->
     <div class="card-atalho" (click)="navegarPara('/catalogo')">
+
       <div class="icone-card">📦</div>
+
       <div class="texto-card">
         <h3>Produtos & Serviços</h3>
         <p>Acesse o catálogo completo para visualização.</p>
       </div>
+
     </div>
 
     <!-- CARRINHO -->
     <div class="card-atalho" (click)="navegarPara('/carrinho')">
+
       <div class="icone-card">🛒</div>
+
       <div class="texto-card">
         <h3>Carrinho / Pedidos</h3>
         <p>Monte pedidos e confira o carrinho de compras.</p>
       </div>
+
     </div>
+
+    <!-- MEUS PEDIDOS -->
+    <div class="card-atalho" (click)="navegarPara('/meus-pedidos')">
+
+      <div class="icone-card">📋</div>
+
+      <div class="texto-card">
+        <h3>Meus Pedidos</h3>
+        <p>Consulte seus pedidos realizados e confira os itens comprados.</p>
+      </div>
+
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="card-atalho" (click)="navegarPara('/clientes')">
+
+      <div class="icone-card">👤</div>
+
+      <div class="texto-card">
+        <h3>Cadastro de Clientes</h3>
+        <p>Cadastre seus dados para utilizar os serviços da Essenza.</p>
+      </div>
+
+    </div>
+
   </div>
 
-  <!-- ATALHO PARA O PAINEL ADMIN -->
+  <!-- ACESSO ADMINISTRATIVO -->
   <div class="rodape-admin">
-    <button class="btn-acesso-admin" (click)="navegarPara('/admin')">
+
+    <button
+      class="btn-acesso-admin"
+      (click)="navegarPara('/admin')">
+
       🔐 Ir para o Painel Administrativo
+
     </button>
+
   </div>
+
 </div>

@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,13 +14,14 @@ import { CartService, ItemCarrinho } from '../../services/cart.service';
   styleUrl: './carrinho.css'
 })
 export class CarrinhoComponent implements OnInit {
+
   itens: ItemCarrinho[] = [];
   clientes: any[] = [];
   idClienteSelecionado: number | null = null;
 
-  carregando: boolean = false;
-  mensagemSucesso: string = '';
-  mensagemErro: string = '';
+  carregando = false;
+  mensagemSucesso = '';
+  mensagemErro = '';
 
   private apiUrlAtendimentos = 'https://localhost:7000/api/Atendimentos';
   private apiUrlClientes = 'https://localhost:7000/api/Clientes';
@@ -35,25 +37,43 @@ export class CarrinhoComponent implements OnInit {
     this.carregarClientes();
   }
 
-  carregarCarrinho() {
+  carregarCarrinho(): void {
     this.itens = this.cartService.getItens();
   }
 
-  carregarClientes() {
+  carregarClientes(): void {
     this.http.get<any[]>(this.apiUrlClientes).subscribe({
-      next: (res) => this.clientes = res || [],
-      error: (err) => console.error('Erro ao carregar clientes:', err)
+      next: res => {
+        this.clientes = res || [];
+      },
+      error: err => {
+        console.error('Erro ao carregar clientes:', err);
+        this.mensagemErro = 'Não foi possível carregar os clientes.';
+      }
     });
   }
 
-  alterarQuantidade(item: ItemCarrinho, delta: number) {
+  alterarQuantidade(item: ItemCarrinho, delta: number): void {
     const novaQtd = item.quantidade + delta;
+
+    if (
+      item.tipoItem === 'P' &&
+      item.quantidadeEstoque !== undefined &&
+      novaQtd > item.quantidadeEstoque
+    ) {
+      this.mensagemErro = 'Quantidade máxima em estoque atingida!';
+      return;
+    }
+
+    this.mensagemErro = '';
+
     this.cartService.atualizarQuantidade(item.iditem, novaQtd);
     this.carregarCarrinho();
   }
 
-  remover(param: ItemCarrinho | number) {
+  remover(param: ItemCarrinho | number): void {
     const id = typeof param === 'number' ? param : param.iditem;
+
     this.cartService.removerItem(id);
     this.carregarCarrinho();
   }
@@ -62,7 +82,17 @@ export class CarrinhoComponent implements OnInit {
     return this.cartService.getTotal();
   }
 
-  finalizarPedido() {
+  private obterDataLocal(): string {
+    const hoje = new Date();
+
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+  }
+
+  finalizarPedido(): void {
     this.mensagemSucesso = '';
     this.mensagemErro = '';
 
@@ -72,47 +102,53 @@ export class CarrinhoComponent implements OnInit {
     }
 
     if (!this.idClienteSelecionado) {
-      this.mensagemErro = 'Por favor, selecione um cliente para finalizar o pedido.';
+      this.mensagemErro = 'Selecione um cliente para finalizar o pedido.';
       return;
     }
 
     this.carregando = true;
 
-    const idCliente = Number(this.idClienteSelecionado);
-
-    // Payload estruturado estritamente conforme o modelo de banco 'atendimento' e 'atendimentoitem'
     const payloadAtendimento = {
-      idpessoa: idCliente,
-      dataAtendimento: new Date().toISOString().split('T')[0], // Envia em formato DATE YYYY-MM-DD
-      statusAtendimento: 'A',
-      atendimentoItens: this.itens.map(item => ({
+      idpessoa: Number(this.idClienteSelecionado),
+      dataAtendimento: this.obterDataLocal(),
+      statusAtendimento: 'P',
+      itens: this.itens.map(item => ({
         iditem: Number(item.iditem),
-        idfuncionario: 1, // Funcionário padrão (FK obrigatória no MySQL)
+        idfuncionario: 1,
         quantidadeItens: Number(item.quantidade),
         valorUnitarioEntrada: Number(item.preco)
       }))
     };
 
-    console.log('Payload enviado para /api/Atendimentos:', payloadAtendimento);
+    console.log('Pedido enviado:', payloadAtendimento);
 
     this.http.post(this.apiUrlAtendimentos, payloadAtendimento).subscribe({
-      next: (res) => {
-        console.log('Atendimento criado com sucesso:', res);
-        this.mensagemSucesso = 'Pedido/Atendimento registrado com sucesso!';
+      next: res => {
+        console.log('Pedido registrado:', res);
+
+        this.mensagemSucesso = 'Pedido realizado com sucesso!';
+
         this.cartService.limparCarrinho();
         this.carregarCarrinho();
+
+        this.idClienteSelecionado = null;
         this.carregando = false;
       },
-      error: (err) => {
-        console.error('Erro detalhado da API:', err);
 
-        if (err.error && typeof err.error === 'object' && err.error.errors) {
-          const detalhes = Object.values(err.error.errors).flat().join(' | ');
+      error: err => {
+        console.error('Erro ao registrar pedido:', err);
+
+        if (err.error?.errors) {
+          const detalhes = Object.values(err.error.errors)
+            .flat()
+            .join(' | ');
+
           this.mensagemErro = `Erro de validação: ${detalhes}`;
         } else if (typeof err.error === 'string') {
           this.mensagemErro = `Erro no backend: ${err.error}`;
         } else {
-          this.mensagemErro = 'Erro ao registrar pedido. Verifique o console do navegador (F12) e a API C#.';
+          this.mensagemErro =
+            'Não foi possível registrar o pedido. Verifique o console e a API.';
         }
 
         this.carregando = false;
